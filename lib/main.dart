@@ -289,144 +289,63 @@ class _PhoneShellState extends State<PhoneShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1a1a1a),
-      body: Center(
-        child: Container(
-          width: 393,
-          height: 852,
-          decoration: BoxDecoration(
-            color: AppColors.black,
-            borderRadius: BorderRadius.circular(52),
-            border: Border.all(color: const Color(0xFF222), width: 1),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black,
-                blurRadius: 140,
-                offset: Offset(0, 60),
-              ),
-              BoxShadow(
-                color: Color(0x99000000),
-                blurRadius: 40,
-                offset: Offset(0, 20),
+      backgroundColor: AppColors.black,
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              SizedBox(height: MediaQuery.of(context).padding.top + 6),
+              _buildStatusBar(),
+              Expanded(
+                child:
+                    _showDetail && _selectedColor != null
+                        ? ColorDetailScreen(
+                          color: _selectedColor!,
+                          onBack: _closeDetail,
+                        )
+                        : IndexedStack(
+                          index: _currentIndex,
+                          children: [
+                            ColorsScreen(
+                              filters: _filters,
+                              selectedFilter: _selectedFilter,
+                              onFilterChanged:
+                                  (f) =>
+                                      setState(() => _selectedFilter = f),
+                              onColorTap: _openDetail,
+                              onCameraTap: () => _onTabTapped(2),
+                            ),
+                            const ExploreScreen(),
+                            const PickerScreen(),
+                            const PalettesScreen(),
+                            const SettingsScreen(),
+                          ],
+                        ),
               ),
             ],
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(52),
-            child: Stack(
-              children: [
-                Column(
-                  children: [
-                    const SizedBox(height: 12),
-                    _buildStatusBar(),
-                    Expanded(
-                      child:
-                          _showDetail && _selectedColor != null
-                              ? ColorDetailScreen(
-                                color: _selectedColor!,
-                                onBack: _closeDetail,
-                              )
-                              : IndexedStack(
-                                index: _currentIndex,
-                                children: [
-                                  ColorsScreen(
-                                    filters: _filters,
-                                    selectedFilter: _selectedFilter,
-                                    onFilterChanged:
-                                        (f) =>
-                                            setState(() => _selectedFilter = f),
-                                    onColorTap: _openDetail,
-                                    onCameraTap: () => _onTabTapped(2),
-                                  ),
-                                  const ExploreScreen(),
-                                  const PickerScreen(),
-                                  const PalettesScreen(),
-                                  const SettingsScreen(),
-                                ],
-                              ),
-                    ),
-                  ],
-                ),
-                Positioned(
-                  top: 12,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      width: 126,
-                      height: 37,
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(width: 40),
-                          Dot(size: 6),
-                          SizedBox(width: 8),
-                          Dot(size: 12),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                if (!_showDetail) _buildTabBar(),
-              ],
-            ),
-          ),
-        ),
+          if (!_showDetail) _buildTabBar(),
+        ],
       ),
     );
   }
 
   Widget _buildStatusBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             '9:41',
             style: GoogleFonts.syne(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
               color: AppColors.white,
             ),
           ),
-          Row(
-            children: [
-              Icon(Icons.signal_cellular_alt, color: AppColors.white, size: 17),
-              const SizedBox(width: 7),
-              Icon(Icons.battery_full, color: AppColors.white, size: 17),
-            ],
-          ),
+          const SizedBox(), // Empty space instead of icons
         ],
-      ),
-    );
-  }
-
-  Widget _buildTabBar() {
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(8, 8, 8, 26),
-        decoration: const BoxDecoration(
-          color: Color(0xF20a0a0a),
-          border: Border(top: BorderSide(color: AppColors.border, width: 1)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildTabItem(0, 'Library', Icons.grid_view_rounded),
-            _buildTabItem(1, 'Explore', Icons.explore_outlined),
-            _buildCamTab(),
-            _buildTabItem(3, 'Palettes', Icons.palette_outlined),
-            _buildTabItem(4, 'Settings', Icons.settings_outlined),
-          ],
-        ),
       ),
     );
   }
@@ -467,45 +386,47 @@ class _PhoneShellState extends State<PhoneShell> {
   Widget _buildCamTab() {
     return GestureDetector(
       onTap: () => _onTabTapped(2),
-      child: Transform.translate(
-        offset: const Offset(0, -16),
-        child: Container(
-          width: 46,
-          height: 46,
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x26ffffff),
-                blurRadius: 20,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-          child: const Icon(Icons.camera_alt, color: Colors.black, size: 20),
+      child: Container(
+        width: 54,
+        height: 42,
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x33ffffff),
+              blurRadius: 20,
+              offset: Offset(0, 4),
+            ),
+          ],
         ),
+        child: const Icon(Icons.camera_alt_outlined, color: Colors.black, size: 24),
       ),
     );
   }
-}
 
-class Dot extends StatelessWidget {
-  final double size;
-  const Dot({super.key, required this.size});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1a1a1a),
-        shape: BoxShape.circle,
-        border:
-            size > 6
-                ? Border.all(color: const Color(0xFF0d0d0d), width: 2)
-                : null,
+  Widget _buildTabBar() {
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        height: 100 + MediaQuery.of(context).padding.bottom,
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 8),
+        decoration: const BoxDecoration(
+          color: Colors.black,
+          border: Border(top: BorderSide(color: Color(0xFF1a1a1a), width: 1.5)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildTabItem(0, 'Library', Icons.grid_view_rounded),
+            const SizedBox(width: 40),
+            _buildCamTab(),
+            const SizedBox(width: 40),
+            _buildTabItem(3, 'Palettes', Icons.palette_outlined),
+          ],
+        ),
       ),
     );
   }
@@ -533,33 +454,19 @@ class ColorsScreen extends StatelessWidget {
       children: [
         Column(
           children: [
-            const SizedBox(height: 14),
+            const SizedBox(height: 18),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Colors',
-                        style: GoogleFonts.playfairDisplay(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.white,
-                        ),
-                      ),
-                      Text(
-                        'Your Library',
-                        style: GoogleFonts.syne(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 2,
-                          color: AppColors.muted,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    'Colors',
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 34,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.white,
+                    ),
                   ),
                   Row(
                     children: [
@@ -567,7 +474,7 @@ class ColorsScreen extends StatelessWidget {
                         Icons.search,
                         () => showToast(context, 'Search colors'),
                       ),
-                      _IconBtn(Icons.sort, () => _showSortSheet(context)),
+                      _IconBtn(Icons.tune, () => _showSortSheet(context)),
                       _IconBtn(
                         Icons.download,
                         () => showToast(context, 'All colors exported!'),
@@ -578,25 +485,25 @@ class ColorsScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
                 children: [
-                  _StatCard('145', 'Colors'),
+                  _StatCard('145', ''),
                   const SizedBox(width: 8),
-                  _StatCard('8', 'Palettes'),
+                  _StatCard('8', ''),
                   const SizedBox(width: 8),
-                  _StatCard('12', 'Favorites'),
+                  _StatCard('12', ''),
                 ],
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 12),
             SizedBox(
-              height: 40,
+              height: 48,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 itemCount: filters.length,
                 itemBuilder: (context, index) {
                   final filter = filters[index];
@@ -604,24 +511,27 @@ class ColorsScreen extends StatelessWidget {
                   return GestureDetector(
                     onTap: () => onFilterChanged(filter),
                     child: Container(
-                      margin: const EdgeInsets.only(right: 6),
+                      margin: const EdgeInsets.only(right: 8),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 6,
+                        horizontal: 18,
+                        vertical: 10,
                       ),
                       decoration: BoxDecoration(
                         color: isActive ? AppColors.white : Colors.transparent,
                         border: Border.all(
                           color: isActive ? AppColors.white : AppColors.border,
+                          width: 1.5,
                         ),
                         borderRadius: BorderRadius.circular(999),
                       ),
-                      child: Text(
-                        filter,
-                        style: GoogleFonts.syne(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isActive ? AppColors.black : AppColors.muted,
+                      child: Center(
+                        child: Text(
+                          filter,
+                          style: GoogleFonts.syne(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: isActive ? AppColors.black : AppColors.muted,
+                          ),
                         ),
                       ),
                     ),
@@ -629,14 +539,14 @@ class ColorsScreen extends StatelessWidget {
                 },
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Expanded(
               child: GridView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
                   childAspectRatio: 1,
                 ),
                 itemCount: colorLibrary.length,
@@ -652,21 +562,25 @@ class ColorsScreen extends StatelessWidget {
           ],
         ),
         Positioned(
-          bottom: 90,
-          right: 18,
+          bottom: 110,
+          right: 24,
           child: GestureDetector(
             onTap: onCameraTap,
             child: Container(
-              width: 48,
-              height: 48,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
                 color: AppColors.white,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(18),
                 boxShadow: const [
-                  BoxShadow(color: Color(0x66000000), blurRadius: 24),
+                  BoxShadow(
+                    color: Color(0x66000000),
+                    blurRadius: 32,
+                    offset: Offset(0, 12),
+                  ),
                 ],
               ),
-              child: const Icon(Icons.add, color: Colors.black, size: 20),
+              child: const Icon(Icons.add, color: Colors.black, size: 24),
             ),
           ),
         ),
@@ -724,31 +638,20 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.symmetric(vertical: 24),
         decoration: BoxDecoration(
-          color: AppColors.dark,
-          border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(12),
+          color: const Color(0xFF151515),
+          borderRadius: BorderRadius.circular(18),
         ),
-        child: Column(
-          children: [
-            Text(
-              num,
-              style: GoogleFonts.playfairDisplay(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: AppColors.white,
-              ),
+        child: Center(
+          child: Text(
+            num,
+            style: GoogleFonts.syne(
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              color: AppColors.white,
             ),
-            Text(
-              label,
-              style: GoogleFonts.syne(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: AppColors.muted,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -762,39 +665,30 @@ class _ColorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isLight = color.r > 200 && color.g > 200 && color.b > 200;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           color: color.color,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(22),
           border:
               color.hex == '#0F0F0F'
-                  ? Border.all(color: AppColors.border)
+                  ? Border.all(color: AppColors.border, width: 2)
                   : null,
         ),
         child: Stack(
           children: [
             Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Color(0x8C000000)],
-                  ),
-                ),
-                child: Text(
-                  color.hex,
-                  style: GoogleFonts.jetBrainsMono(
-                    fontSize: 10,
-                    color: isLight ? Colors.black54 : Colors.white,
-                  ),
+              bottom: 14,
+              left: 14,
+              child: Text(
+                color.hex,
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: (color.r + color.g + color.b) / 3 > 128
+                      ? Colors.black54
+                      : Colors.white70,
                 ),
               ),
             ),
