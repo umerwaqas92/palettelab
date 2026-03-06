@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>Litur – Color Library</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --black:#0a0a0a;
+  --off-black:#111;
+  --dark:#1c1c1c;
+  --mid:#2e2e2e;
+  --border:#2a2a2a;
+  --border-light:#3a3a3a;
+  --white:#f5f5f0;
+  --off-white:#e8e8e2;
+  --muted:#666;
+  --muted2:#444;
+  --accent:#ffffff;
+  --highlight:rgba(255,255,255,0.06);
+  --highlight2:rgba(255,255,255,0.1);
+}
+html{background:#050505;}
+body{
+  background:#050505;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  font-family:'Syne',sans-serif;
+  padding:20px;
+}
+
+/* ─── PHONE SHELL ─── */
+.phone{
+  width:393px;
+  height:852px;
+  background:var(--black);
+  border-radius:52px;
+  border:1px solid #222;
+  box-shadow:
+    0 0 0 1px #0a0a0a,
+    0 60px 140px rgba(0,0,0,0.95),
+    0 20px 40px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+  overflow:hidden;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+}
+/* Dynamic island */
+.island{
+  position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  width:126px;height:37px;
+  background:#000;
+  border-radius:20px;
+  z-index:999;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.island-cam{width:12px;height:12px;background:#1a1a1a;border-radius:50%;border:2px solid #0d0d0d;}
+.island-pill{width:6px;height:6px;background:#1a1a1a;border-radius:50%;}
+
+/* STATUS */
+.status{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:16px 28px 0;flex-shrink:0;height:50px;
+}
+.status-time{font-size:15px;font-weight:700;color:var(--white);letter-spacing:0.2px;font-family:'Syne',sans-serif;}
+.status-r{display:flex;gap:7px;align-items:center;}
+.status-r svg{color:var(--white);}
+
+/* SCREEN */
+.screen{display:none;flex-direction:column;flex:1;overflow:hidden;}
+.screen.active{display:flex;}
+
+/* ─── TOP BAR ─── */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px 8px;flex-shrink:0;
+}
+.topbar-title{
+  font-family:'Playfair Display',serif;
+  font-size:30px;font-weight:900;
+  color:var(--white);letter-spacing:-1px;
+}
+.topbar-sub{
+  font-family:'Syne',sans-serif;
+  font-size:11px;font-weight:600;letter-spacing:2px;
+  text-transform:uppercase;color:var(--muted);
+  padding:2px 0 0;
+}
+.topbar-actions{display:flex;gap:6px;}
+
+/* ICON BTN */
+.ibtn{
+  width:36px;height:36px;
+  background:var(--dark);
+  border:1px solid var(--border);
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--white);
+  transition:all 0.15s;flex-shrink:0;
+}
+.ibtn:hover{background:var(--mid);border-color:var(--border-light);}
+.ibtn.danger{color:#ff4444;}
+.ibtn.active-btn{background:var(--white);color:var(--black);}
+
+/* ─── PILL TABS ─── */
+.pill-row{
+  display:flex;gap:6px;padding:4px 20px 12px;
+  overflow-x:auto;scrollbar-width:none;flex-shrink:0;
+}
+.pill-row::-webkit-scrollbar{display:none;}
+.pill{
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:999px;padding:6px 14px;
+  font-family:'Syne',sans-serif;font-size:12px;font-weight:600;
+  color:var(--muted);cursor:pointer;white-space:nowrap;
+  transition:all 0.15s;flex-shrink:0;
+}
+.pill.active{background:var(--white);color:var(--black);border-color:var(--white);}
+.pill:hover:not(.active){border-color:#555;color:var(--off-white);}
+
+/* ─── COLORS SCREEN ─── */
+.color-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:8px;padding:0 20px;
+  overflow-y:auto;flex:1;scrollbar-width:none;
+}
+.color-grid::-webkit-scrollbar{display:none;}
+.ccard{
+  border-radius:14px;aspect-ratio:1;
+  position:relative;cursor:pointer;overflow:hidden;
+  border:1px solid rgba(255,255,255,0.04);
+  transition:transform 0.2s,box-shadow 0.2s;
+}
+.ccard:hover{transform:scale(0.94);box-shadow:0 8px 30px rgba(0,0,0,0.5);}
+.ccard:active{transform:scale(0.9);}
+.ccard-hex{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:6px 8px;
+  background:linear-gradient(transparent,rgba(0,0,0,0.55));
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  color:rgba(255,255,255,0.9);letter-spacing:0.5px;
+}
+.ccard-fav{
+  position:absolute;top:6px;right:6px;
+  width:22px;height:22px;
+  background:rgba(0,0,0,0.35);border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);opacity:0;transition:opacity 0.15s;
+}
+.ccard:hover .ccard-fav{opacity:1;}
+.ccard-fav.starred{opacity:1;background:rgba(255,255,255,0.9);}
+.ccard-fav.starred svg{color:#111;}
+
+/* ─── CAMERA SCREEN ─── */
+.cam-view{
+  flex:1;position:relative;overflow:hidden;
+  background:#0a0a0a;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+.cam-scene{position:absolute;inset:0;overflow:hidden;}
+.cam-blob{position:absolute;border-radius:50%;filter:blur(40px);animation:blobMove 4s ease-in-out infinite;}
+@keyframes blobMove{0%,100%{transform:scale(1) translate(0,0);}50%{transform:scale(1.1) translate(8px,-8px);}}
+.cam-grid-lines{position:absolute;inset:0;opacity:0.08;}
+.cam-grid-lines::before,.cam-grid-lines::after{content:'';position:absolute;background:rgba(255,255,255,0.6);}
+.cam-grid-lines::before{width:1px;height:100%;left:33%;}
+.cam-grid-lines::after{height:1px;width:100%;top:50%;}
+
+.reticle{
+  position:relative;z-index:2;
+  width:120px;height:120px;
+}
+.reticle-corner{
+  position:absolute;width:22px;height:22px;
+  border:2.5px solid var(--white);
+}
+.reticle-corner.tl{top:0;left:0;border-right:none;border-bottom:none;border-radius:4px 0 0 0;}
+.reticle-corner.tr{top:0;right:0;border-left:none;border-bottom:none;border-radius:0 4px 0 0;}
+.reticle-corner.bl{bottom:0;left:0;border-right:none;border-top:none;border-radius:0 0 0 4px;}
+.reticle-corner.br{bottom:0;right:0;border-left:none;border-top:none;border-radius:0 0 4px 0;}
+.reticle-dot{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:8px;height:8px;background:var(--white);border-radius:50%;
+  animation:dotPulse 2s ease-in-out infinite;
+}
+@keyframes dotPulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:1;}50%{transform:translate(-50%,-50%) scale(1.5);opacity:0.5;}}
+.reticle-ring{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:50px;height:50px;
+  border:1px solid rgba(255,255,255,0.3);border-radius:50%;
+  animation:ringPulse 2s ease-in-out infinite;
+}
+@keyframes ringPulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:0.3;}50%{transform:translate(-50%,-50%) scale(1.3);opacity:0;}}
+.cam-label{
+  position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:rgba(255,255,255,0.4);letter-spacing:2px;text-transform:uppercase;
+}
+.cam-zoom-row{
+  display:flex;gap:8px;align-items:center;justify-content:center;
+  padding:12px 20px 8px;flex-shrink:0;
+}
+.zoom-btn{
+  background:var(--dark);border:1px solid var(--border);border-radius:999px;
+  padding:5px 14px;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;
+  color:var(--muted);cursor:pointer;transition:all 0.15s;
+}
+.zoom-btn.active{background:var(--white);color:var(--black);border-color:var(--white);}
+
+.picker-panel{
+  background:var(--off-black);
+  border-top:1px solid var(--border);
+  padding:16px 20px;flex-shrink:0;
+}
+.detected-row{
+  display:flex;align-items:center;gap:12px;margin-bottom:14px;
+}
+.det-swatch{
+  width:56px;height:56px;border-radius:12px;flex-shrink:0;
+  border:1px solid rgba(255,255,255,0.08);
+  position:relative;overflow:hidden;
+}
+.det-swatch::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.1),transparent);
+}
+.det-name{font-size:17px;font-weight:700;color:var(--white);font-family:'Syne',sans-serif;}
+.det-sub{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:2px;}
+.det-actions{margin-left:auto;display:flex;gap:6px;}
+
+.codes-strip{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;scrollbar-width:none;}
+.codes-strip::-webkit-scrollbar{display:none;}
+.code-pill{
+  background:var(--dark);border:1px solid var(--border);border-radius:10px;
+  padding:8px 12px;flex-shrink:0;cursor:pointer;
+  transition:all 0.15s;min-width:80px;
+}
+.code-pill:hover{background:var(--mid);border-color:var(--border-light);}
+.code-pill:active{background:var(--white);}
+.code-pill:active .cp-val,.code-pill:active .cp-tag{color:var(--black)!important;}
+.cp-tag{font-family:'Syne',sans-serif;font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:3px;}
+.cp-val{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--white);}
+
+.cam-btn-row{display:flex;gap:8px;}
+.btn-main{
+  flex:1;background:var(--white);color:var(--black);
+  border:none;border-radius:12px;padding:14px;
+  font-family:'Syne',sans-serif;font-size:14px;font-weight:700;
+  cursor:pointer;transition:all 0.15s;letter-spacing:0.3px;
+}
+.btn-main:hover{background:var(--off-white);}
+.btn-main:active{transform:scale(0.97);}
+.btn-ghost{
+  background:transparent;color:var(--white);
+  border:1px solid var(--border);border-radius:12px;padding:14px 16px;
+  font-family:'Syne',sans-serif;font-size:14px;font-weight:600;
+  cursor:pointer;transition:all 0.15s;
+}
+.btn-ghost:hover{background:var(--highlight);border-color:var(--border-light);}
+.btn-outline{
+  background:transparent;color:var(--white);
+  border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+  font-family:'Syne',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all 0.15s;
+}
+.btn-outline:hover{background:var(--highlight);}
+
+/* ─── PALETTES ─── */
+.plist{flex:1;overflow-y:auto;padding:0 20px;scrollbar-width:none;display:flex;flex-direction:column;gap:10px;}
+.plist::-webkit-scrollbar{display:none;}
+.pcard{
+  background:var(--dark);border-radius:16px;padding:0;
+  border:1px solid var(--border);cursor:pointer;
+  transition:border-color 0.2s,transform 0.18s;overflow:hidden;
+}
+.pcard:hover{border-color:var(--border-light);transform:translateY(-2px);}
+.pcard-bar{height:52px;display:flex;overflow:hidden;}
+.pcard-bar .psw{flex:1;transition:flex 0.3s;}
+.pcard-bar .psw:hover{flex:1.6;}
+.pcard-info{display:flex;align-items:center;padding:10px 14px;gap:8px;}
+.pcard-name{font-size:14px;font-weight:700;color:var(--white);flex:1;font-family:'Syne',sans-serif;}
+.pcard-meta{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+.pcard-actions{display:flex;gap:4px;}
+.pcard-btn{
+  width:28px;height:28px;background:var(--mid);border:none;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--muted);transition:all 0.15s;
+}
+.pcard-btn:hover{background:var(--border-light);color:var(--white);}
+
+.add-palette-btn{
+  margin:0 20px 10px;
+  background:transparent;
+  border:1px dashed var(--border);border-radius:14px;padding:13px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  color:var(--muted);font-family:'Syne',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all 0.2s;flex-shrink:0;
+}
+.add-palette-btn:hover{border-color:#555;color:var(--off-white);background:var(--highlight);}
+
+/* ─── DETAIL ─── */
+.detail-hero{
+  height:200px;flex-shrink:0;position:relative;overflow:hidden;
+}
+.dhero-color{width:100%;height:100%;position:relative;}
+.dhero-color::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to bottom,transparent 50%,rgba(0,0,0,0.5) 100%);
+}
+.dhero-btns{position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;z-index:2;}
+.dhero-btn{
+  width:36px;height:36px;
+  background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--white);backdrop-filter:blur(12px);transition:all 0.15s;
+}
+.dhero-btn:hover{background:rgba(0,0,0,0.6);}
+.dhero-right{display:flex;gap:6px;}
+.dhero-name-overlay{
+  position:absolute;bottom:14px;left:14px;z-index:2;
+}
+.dhero-name-overlay span{
+  font-family:'Playfair Display',serif;font-size:22px;font-weight:700;
+  color:#fff;text-shadow:0 2px 12px rgba(0,0,0,0.5);
+}
+
+.dbody{flex:1;overflow-y:auto;scrollbar-width:none;}
+.dbody::-webkit-scrollbar{display:none;}
+.dsection{padding:16px 20px;border-bottom:1px solid var(--border);}
+.dsection:last-child{border-bottom:none;}
+.dsec-title{
+  font-family:'Syne',sans-serif;font-size:10px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;color:var(--muted);
+  margin-bottom:12px;
+}
+.codes-2x2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.codeblock{
+  background:var(--dark);border:1px solid var(--border);border-radius:12px;
+  padding:12px 14px;cursor:pointer;transition:all 0.15s;
+  display:flex;flex-direction:column;gap:4px;
+}
+.codeblock:hover{background:var(--mid);border-color:var(--border-light);}
+.codeblock:active{background:var(--white);}
+.codeblock:active .cb-label,.codeblock:active .cb-val{color:var(--black)!important;}
+.cb-label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+.cb-val{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--white);}
+.copy-hint{font-size:9px;color:var(--muted2);margin-top:2px;}
+
+.combos-row{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+.combos-row::-webkit-scrollbar{display:none;}
+.combo{
+  flex-shrink:0;border-radius:12px;overflow:hidden;
+  border:1px solid var(--border);width:90px;cursor:pointer;
+  transition:transform 0.15s;
+}
+.combo:hover{transform:scale(1.04);}
+.combo-swatches{display:flex;}
+.combo-swatches div{flex:1;height:48px;}
+.combo-label{
+  background:var(--dark);padding:6px;text-align:center;
+  font-size:9px;font-weight:700;letter-spacing:0.5px;color:var(--muted);
+  font-family:'Syne',sans-serif;
+}
+
+.contrast-cards{display:flex;flex-direction:column;gap:8px;}
+.contrast-card{
+  background:var(--dark);border:1px solid var(--border);border-radius:12px;
+  padding:12px 14px;display:flex;align-items:center;gap:10px;
+}
+.cc-swatches{display:flex;gap:4px;}
+.cc-swatch{width:36px;height:36px;border-radius:8px;border:1px solid var(--border-light);}
+.cc-info{flex:1;}
+.cc-title{font-size:13px;font-weight:700;color:var(--white);}
+.cc-ratio{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+.badge-pass{background:rgba(255,255,255,0.1);color:#7fff9a;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;border:1px solid rgba(127,255,154,0.2);}
+.badge-fail{background:rgba(255,255,255,0.06);color:#ff6b6b;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;border:1px solid rgba(255,107,107,0.2);}
+
+.gen-palette{display:flex;gap:5px;margin-bottom:10px;}
+.gp-swatch{flex:1;height:48px;border-radius:10px;cursor:pointer;transition:flex 0.25s;border:1px solid rgba(0,0,0,0.1);}
+.gp-swatch:hover{flex:1.7;}
+.gp-swatch.current{flex:1.4;outline:2px solid var(--white);outline-offset:2px;}
+
+.tags-row{display:flex;gap:6px;flex-wrap:wrap;}
+.tag{
+  background:var(--dark);border:1px solid var(--border);border-radius:6px;
+  padding:5px 10px;font-size:11px;font-weight:600;color:var(--muted);
+  font-family:'Syne',sans-serif;cursor:pointer;transition:all 0.15s;
+}
+.tag:hover{border-color:#555;color:var(--white);}
+.tag.active-tag{background:var(--white);color:var(--black);border-color:var(--white);}
+
+/* edit color slider */
+.slider-group{display:flex;flex-direction:column;gap:10px;}
+.slider-row{display:flex;align-items:center;gap:10px;}
+.sl-label{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--muted);width:28px;}
+.sl-track{
+  flex:1;height:6px;border-radius:3px;position:relative;
+  background:var(--mid);cursor:pointer;
+}
+.sl-thumb{
+  width:16px;height:16px;background:var(--white);border-radius:50%;
+  position:absolute;top:50%;transform:translateY(-50%);
+  box-shadow:0 2px 6px rgba(0,0,0,0.4);cursor:grab;
+  border:2px solid var(--black);
+}
+.sl-val{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);width:32px;text-align:right;}
+
+/* ─── EXPLORE / DISCOVER ─── */
+.explore-scroll{flex:1;overflow-y:auto;padding:0 20px 16px;scrollbar-width:none;}
+.explore-scroll::-webkit-scrollbar{display:none;}
+.explore-section{margin-bottom:20px;}
+.explore-sec-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:10px;
+}
+.explore-sec-title{font-size:15px;font-weight:700;color:var(--white);font-family:'Syne',sans-serif;}
+.explore-see-all{font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;letter-spacing:0.5px;}
+.explore-see-all:hover{color:var(--white);}
+.trending-row{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;}
+.trending-row::-webkit-scrollbar{display:none;}
+.trend-card{
+  flex-shrink:0;width:120px;border-radius:14px;overflow:hidden;
+  border:1px solid var(--border);cursor:pointer;transition:transform 0.15s;
+}
+.trend-card:hover{transform:scale(0.96);}
+.trend-bar{height:64px;display:flex;}
+.trend-bar div{flex:1;}
+.trend-info{padding:8px 10px;background:var(--dark);}
+.trend-name{font-size:12px;font-weight:700;color:var(--white);font-family:'Syne',sans-serif;}
+.trend-count{font-size:10px;color:var(--muted);margin-top:1px;}
+.color-of-day{
+  border-radius:16px;overflow:hidden;border:1px solid var(--border);
+  margin-bottom:10px;cursor:pointer;
+}
+.cod-color{height:100px;position:relative;}
+.cod-color::after{content:'';position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,0.4),transparent);}
+.cod-label{
+  position:absolute;bottom:12px;left:14px;z-index:1;
+  font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#fff;
+}
+.cod-tag{
+  position:absolute;top:12px;right:12px;z-index:1;
+  background:rgba(0,0,0,0.4);backdrop-filter:blur(8px);
+  color:rgba(255,255,255,0.8);font-size:10px;font-weight:700;
+  padding:4px 8px;border-radius:6px;font-family:'JetBrains Mono',monospace;
+}
+.cod-footer{background:var(--dark);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;}
+.cod-hex{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--white);}
+.cod-actions{display:flex;gap:6px;}
+
+.recent-colors{display:flex;gap:6px;flex-wrap:wrap;}
+.mini-color{
+  width:44px;height:44px;border-radius:10px;
+  border:1px solid var(--border);cursor:pointer;
+  transition:transform 0.15s;position:relative;
+}
+.mini-color:hover{transform:scale(0.92);}
+
+/* ─── SETTINGS ─── */
+.settings-body{flex:1;overflow-y:auto;padding:0 20px 20px;scrollbar-width:none;}
+.settings-body::-webkit-scrollbar{display:none;}
+.settings-profile{
+  background:var(--dark);border:1px solid var(--border);
+  border-radius:16px;padding:16px;margin-bottom:16px;
+  display:flex;align-items:center;gap:14px;
+}
+.profile-avatar{
+  width:52px;height:52px;background:var(--mid);border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--white);
+  border:1px solid var(--border-light);
+}
+.profile-info h3{font-size:15px;font-weight:700;color:var(--white);font-family:'Syne',sans-serif;}
+.profile-info p{font-size:11px;color:var(--muted);margin-top:2px;}
+.profile-badge{
+  margin-left:auto;background:var(--mid);border:1px solid var(--border);
+  border-radius:8px;padding:5px 10px;
+  font-size:11px;font-weight:700;color:var(--muted);font-family:'Syne',sans-serif;
+}
+.s-section-label{
+  font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:var(--muted2);margin:14px 0 8px;
+}
+.sgroup{background:var(--dark);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:2px;}
+.srow{
+  display:flex;align-items:center;gap:12px;padding:13px 14px;
+  border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s;
+}
+.srow:last-child{border-bottom:none;}
+.srow:hover{background:var(--highlight);}
+.srow-icon{
+  width:32px;height:32px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.srow-label{flex:1;font-size:14px;font-weight:600;color:var(--white);font-family:'Syne',sans-serif;}
+.srow-val{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+.schev{color:var(--muted2);}
+.toggle{
+  width:42px;height:24px;background:#333;border-radius:12px;
+  position:relative;cursor:pointer;flex-shrink:0;transition:background 0.25s;
+}
+.toggle.on{background:#e8e8e2;}
+.toggle::after{
+  content:'';position:absolute;top:3px;left:3px;
+  width:18px;height:18px;background:#888;border-radius:50%;
+  transition:transform 0.25s,background 0.25s;
+}
+.toggle.on::after{transform:translateX(18px);background:var(--black);}
+
+/* ─── TAB BAR ─── */
+.tabbar{
+  display:flex;
+  background:rgba(10,10,10,0.95);
+  backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+  padding:8px 8px 26px;flex-shrink:0;
+}
+.tab{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  cursor:pointer;padding:6px 4px;border-radius:12px;
+  transition:background 0.15s;border:none;background:transparent;
+}
+.tab:hover{background:var(--highlight);}
+.tab-ico{
+  width:22px;height:22px;
+  display:flex;align-items:center;justify-content:center;
+}
+.tab-lbl{
+  font-family:'Syne',sans-serif;font-size:9px;font-weight:700;
+  letter-spacing:0.5px;text-transform:uppercase;color:var(--muted2);
+}
+.tab.active .tab-lbl{color:var(--white);}
+.tab.active .tab-ico svg{color:var(--white)!important;}
+
+/* center cam tab */
+.tab.cam-tab .tab-ico{
+  width:46px;height:46px;
+  background:var(--white);border-radius:14px;
+  margin-top:-16px;
+  box-shadow:0 4px 20px rgba(255,255,255,0.15);
+}
+.tab.cam-tab .tab-ico svg{color:var(--black)!important;}
+.tab.cam-tab.active .tab-ico{background:var(--white);}
+
+/* ─── OVERLAYS ─── */
+.overlay{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);
+  z-index:80;opacity:0;pointer-events:none;transition:opacity 0.3s;
+}
+.overlay.show{opacity:1;pointer-events:all;}
+
+/* BOTTOM SHEET */
+.bsheet{
+  position:absolute;bottom:0;left:0;right:0;
+  background:var(--off-black);
+  border-radius:24px 24px 0 0;
+  border-top:1px solid var(--border);
+  padding:0;z-index:90;
+  transform:translateY(110%);
+  transition:transform 0.36s cubic-bezier(0.32,0.72,0,1);
+}
+.bsheet.open{transform:translateY(0);}
+.bsheet-handle{
+  width:32px;height:3px;background:#333;border-radius:2px;
+  margin:14px auto 0;
+}
+.bsheet-title{
+  font-family:'Playfair Display',serif;font-size:20px;font-weight:700;
+  color:var(--white);padding:12px 20px 14px;
+  border-bottom:1px solid var(--border);
+}
+.bsheet-body{padding:16px 20px 32px;}
+.share-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.share-item{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;}
+.share-ico{
+  width:54px;height:54px;border-radius:16px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;border:1px solid var(--border);background:var(--dark);
+  transition:all 0.15s;
+}
+.share-item:hover .share-ico{background:var(--mid);transform:scale(0.95);}
+.share-lbl{font-size:10px;font-weight:700;color:var(--muted);font-family:'Syne',sans-serif;text-align:center;}
+
+/* TOAST */
+.toast{
+  position:absolute;bottom:108px;left:50%;transform:translateX(-50%) translateY(10px);
+  background:var(--white);color:var(--black);
+  padding:10px 18px;border-radius:10px;
+  font-size:13px;font-weight:700;font-family:'Syne',sans-serif;
+  white-space:nowrap;opacity:0;
+  transition:opacity 0.25s,transform 0.25s;
+  pointer-events:none;z-index:200;
+  box-shadow:0 8px 30px rgba(0,0,0,0.5);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* MODAL */
+.modal{
+  position:absolute;inset:20px;
+  background:var(--off-black);border:1px solid var(--border);border-radius:22px;
+  z-index:100;display:flex;flex-direction:column;
+  transform:scale(0.9);opacity:0;pointer-events:none;
+  transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  overflow:hidden;
+}
+.modal.show{transform:scale(1);opacity:1;pointer-events:all;}
+.modal-header{
+  display:flex;align-items:center;padding:16px 16px 12px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.modal-title{
+  font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--white);flex:1;
+}
+.modal-body{flex:1;overflow-y:auto;padding:16px;scrollbar-width:none;}
+.modal-body::-webkit-scrollbar{display:none;}
+.modal-footer{padding:12px 16px 16px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;}
+
+/* FAB */
+.fab{
+  position:absolute;bottom:90px;right:18px;
+  width:48px;height:48px;
+  background:var(--white);color:var(--black);
+  border:none;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;z-index:20;
+  box-shadow:0 8px 24px rgba(0,0,0,0.4);
+  transition:transform 0.2s,box-shadow 0.2s;
+}
+.fab:hover{transform:scale(0.93);}
+
+/* SEARCH */
+.search-bar{
+  margin:0 20px 12px;flex-shrink:0;
+  background:var(--dark);border:1px solid var(--border);border-radius:12px;
+  display:flex;align-items:center;gap:10px;padding:11px 14px;
+}
+.search-bar input{
+  background:none;border:none;outline:none;
+  color:var(--white);font-family:'Syne',sans-serif;font-size:14px;font-weight:500;flex:1;
+}
+.search-bar input::placeholder{color:var(--muted2);}
+
+/* stats row */
+.stats-row{display:flex;gap:8px;padding:0 20px 12px;flex-shrink:0;}
+.stat-card{
+  flex:1;background:var(--dark);border:1px solid var(--border);border-radius:12px;
+  padding:10px 12px;
+}
+.stat-num{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--white);}
+.stat-lbl{font-size:10px;font-weight:600;color:var(--muted);font-family:'Syne',sans-serif;margin-top:1px;}
+
+/* watch banner */
+.watch-banner{
+  margin:0 20px 12px;
+  background:var(--dark);border:1px solid var(--border);border-radius:14px;
+  padding:12px 14px;display:flex;align-items:center;gap:12px;flex-shrink:0;
+  cursor:pointer;transition:border-color 0.15s;
+}
+.watch-banner:hover{border-color:#555;}
+.watch-ico{font-size:24px;}
+.watch-text h4{font-size:13px;font-weight:700;color:var(--white);font-family:'Syne',sans-serif;}
+.watch-text p{font-size:11px;color:var(--muted);}
+.watch-arrow{margin-left:auto;color:var(--muted);}
+
+/* color name input modal */
+.name-input{
+  background:var(--dark);border:1px solid var(--border);border-radius:12px;
+  padding:12px 14px;color:var(--white);font-family:'Syne',sans-serif;
+  font-size:15px;font-weight:600;width:100%;outline:none;
+  transition:border-color 0.15s;
+}
+.name-input:focus{border-color:#555;}
+</style>
+</head>
+<body>
+<div class="phone">
+  <!-- Dynamic Island -->
+  <div class="island">
+    <div class="island-pill"></div>
+    <div class="island-cam"></div>
+  </div>
+
+  <!-- STATUS BAR -->
+  <div class="status">
+    <span class="status-time">9:41</span>
+    <div class="status-r">
+      <svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="6" width="3" height="6" rx="1" fill="currentColor"/><rect x="4.5" y="4" width="3" height="8" rx="1" fill="currentColor"/><rect x="9" y="2" width="3" height="10" rx="1" fill="currentColor"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="currentColor" opacity="0.3"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 9.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z" fill="currentColor"/><path d="M4.2 6.5A5.4 5.4 0 0 1 8 5c1.44 0 2.74.57 3.7 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M1 3.5A9.8 9.8 0 0 1 8 1c2.8 0 5.32 1.1 7.14 2.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none" opacity="0.5"/></svg>
+      <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="2.5" stroke="currentColor" stroke-opacity="0.35"/><rect x="2" y="2" width="18" height="8" rx="1.5" fill="currentColor"/><path d="M23 4v4a2 2 0 0 0 0-4z" fill="currentColor" opacity="0.4"/></svg>
+    </div>
+  </div>
+
+  <!-- ════ SCREEN: COLORS ════ -->
+  <div class="screen active" id="screen-colors">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Colors</div>
+        <div class="topbar-sub">Your Library</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="ibtn" onclick="openSearch()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35" stroke-linecap="round"/></svg></button>
+        <button class="ibtn" onclick="openSortModal()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M7 12h10M11 18h2" stroke-linecap="round"/></svg></button>
+        <button class="ibtn" onclick="showToast('All colors exported!')"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-linecap="round"/></svg></button>
+        <button class="ibtn" onclick="openShare()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num">145</div><div class="stat-lbl">Colors</div></div>
+      <div class="stat-card"><div class="stat-num">8</div><div class="stat-lbl">Palettes</div></div>
+      <div class="stat-card"><div class="stat-num">12</div><div class="stat-lbl">Favorites</div></div>
+    </div>
+
+    <div class="pill-row">
+      <div class="pill active">All</div>
+      <div class="pill">Recent</div>
+      <div class="pill">Favorites</div>
+      <div class="pill">Light</div>
+      <div class="pill">Dark</div>
+      <div class="pill">Warm</div>
+      <div class="pill">Cool</div>
+    </div>
+
+    <div class="color-grid" id="colorGrid">
+      <div class="ccard" style="background:#0a0a0a;border:1px solid #2a2a2a" onclick="openDetail('#0F0F0F','rgb(15,15,15)','hsb(0°,0%,6%)','cmyk(0,0,0,94)')">
+        <div class="ccard-hex">#0F0F0F</div>
+        <div class="ccard-fav" onclick="event.stopPropagation();toggleFav(this)"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      </div>
+      <div class="ccard" style="background:#1a1a1a" onclick="openDetail('#1A1A1A','rgb(26,26,26)','hsb(0°,0%,10%)','cmyk(0,0,0,90)')">
+        <div class="ccard-hex">#1A1A1A</div>
+        <div class="ccard-fav" onclick="event.stopPropagation();toggleFav(this)"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      </div>
+      <div class="ccard" style="background:#2e2e2e" onclick="openDetail('#2E2E2E','rgb(46,46,46)','hsb(0°,0%,18%)','cmyk(0,0,0,82)')">
+        <div class="ccard-hex">#2E2E2E</div>
+        <div class="ccard-fav" onclick="event.stopPropagation();toggleFav(this)"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      </div>
+      <div class="ccard" style="background:#505518" onclick="openDetail('#505518','rgb(80,85,24)','hsb(64°,72%,33%)','cmyk(6,0,72,67)')">
+        <div class="ccard-hex">#505518</div>
+        <div class="ccard-fav" onclick="event.stopPropagation();toggleFav(this)"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      </div>
+      <div class="ccard" style="background:#5386C0" onclick="openDetail('#5386C0','rgb(83,134,192)','hsb(211°,57%,75%)','cmyk(57,30,0,25)')">
+        <div class="ccard-hex">#5386C0</div>
+        <div class="ccard-fav" onclick="event.stopPropagation();toggleFav(this)"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      </div>
+      <div class="ccard" style="background:#FBCE50" onclick="openDetail('#FBCE50','rgb(251,206,80)','hsb(44°,68%,98%)','cmyk(0,18,68,2)')">
+        <div class="ccard-hex" style="color:rgba(0,0,0,0.7)">#FBCE50</div>
+        <div class="ccard-fav" onclick="event.stopPropagation();toggleFav(this)"><svg width="10" height="10" fill="none" stroke="#111" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      </div>
+      <div class="ccard" style="background:#C0392B" onclick="openDetail('#C0392B','rgb(192,57,43)','hsb(5°,78%,75%)','cmyk(0,70,78,25)')">
+        <div class="ccard-hex">#C0392B</div>
+        <div class="ccard-fav" onclick="event.stopPropagation();toggleFav(this)"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      </div>
+      <div class="ccard" style="background:#2ECC71" onclick="openDetail('#2ECC71','rgb(46,204,113)','hsb(145°,77%,80%)','cmyk(77,0,45,20)')">
+        <div class="ccard-hex" style="color:rgba(0,0,0,0.7)">#2ECC71</div>
+        <div class="ccard-fav" onclick="event.stopPropagation();toggleFav(this)"><svg width="10" height="10" fill="none" stroke="#111" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      </div>
+      <div class="ccard" style="background:#E1FEE0" onclick="openDetail('#E1FEE0','rgb(225,254,224)','hsb(119°,12%,100%)','cmyk(11,0,12,0)')">
+        <div class="ccard-hex" style="color:rgba(0,0,0,0.6)">#E1FEE0</div>
+        <div class="ccard-fav" onclick="event.stopPropagation();toggleFav(this)"><svg width="10" height="10" fill="none" stroke="#333" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      </div>
+      <div class="ccard" style="background:#8E44AD" onclick="openDetail('#8E44AD','rgb(142,68,173)','hsb(283°,61%,68%)','cmyk(18,61,0,32)')">
+        <div class="ccard-hex">#8E44AD</div>
+        <div class="ccard-fav" onclick="event.stopPropagation();toggleFav(this)"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      </div>
+      <div class="ccard" style="background:#E67E22" onclick="openDetail('#E67E22','rgb(230,126,34)','hsb(28°,85%,90%)','cmyk(0,45,85,10)')">
+        <div class="ccard-hex">#E67E22</div>
+        <div class="ccard-fav" onclick="event.stopPropagation();toggleFav(this)"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      </div>
+      <div class="ccard" style="background:#E9DEC6" onclick="openDetail('#E9DEC6','rgb(233,222,198)','hsb(40°,15%,91%)','cmyk(0,5,15,9)')">
+        <div class="ccard-hex" style="color:rgba(0,0,0,0.6)">#E9DEC6</div>
+        <div class="ccard-fav" onclick="event.stopPropagation();toggleFav(this)"><svg width="10" height="10" fill="none" stroke="#333" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      </div>
+    </div>
+    <button class="fab" onclick="switchScreen('camera')">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </div>
+
+  <!-- ════ SCREEN: CAMERA ════ -->
+  <div class="screen" id="screen-camera">
+    <div class="topbar" style="padding-bottom:6px;">
+      <div>
+        <div class="topbar-title">Picker</div>
+        <div class="topbar-sub">Point & Capture</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="ibtn" onclick="showToast('Flash toggled')"><svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></button>
+        <button class="ibtn" onclick="showToast('Grid toggled')"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button>
+        <button class="ibtn" onclick="showToast('Photo library opened')"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></button>
+      </div>
+    </div>
+    <div class="cam-zoom-row">
+      <button class="zoom-btn active" onclick="setZoom(this,'0.5×')">0.5×</button>
+      <button class="zoom-btn" onclick="setZoom(this,'1×')">1×</button>
+      <button class="zoom-btn" onclick="setZoom(this,'2×')">2×</button>
+      <button class="zoom-btn" onclick="setZoom(this,'3×')">3×</button>
+    </div>
+    <div class="cam-view">
+      <div class="cam-scene">
+        <div class="cam-blob" style="width:180px;height:180px;background:#2e2e2e;top:5%;left:10%;animation-delay:0s;"></div>
+        <div class="cam-blob" style="width:140px;height:140px;background:#1a1a1a;bottom:20%;right:5%;animation-delay:1s;"></div>
+        <div class="cam-blob" style="width:100px;height:100px;background:#3a3a3a;top:50%;left:50%;animation-delay:2s;"></div>
+      </div>
+      <div class="cam-grid-lines"></div>
+      <div class="reticle">
+        <div class="reticle-corner tl"></div>
+        <div class="reticle-corner tr"></div>
+        <div class="reticle-corner bl"></div>
+        <div class="reticle-corner br"></div>
+        <div class="reticle-ring"></div>
+        <div class="reticle-dot"></div>
+      </div>
+      <div class="cam-label">TAP TO LOCK</div>
+    </div>
+    <div class="picker-panel">
+      <div class="detected-row">
+        <div class="det-swatch" style="background:#1c1c1c;" id="det-swatch"></div>
+        <div>
+          <div class="det-name" id="det-name">Graphite Black</div>
+          <div class="det-sub" id="det-sub">#1C1C1C · Auto-detected</div>
+        </div>
+        <div class="det-actions">
+          <button class="ibtn" onclick="openEditName()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="ibtn" onclick="showToast('Eyedropper ready')"><svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M20.71 5.63l-2.34-2.34a1 1 0 0 0-1.41 0l-3.12 3.12-1.41-1.42-1.42 1.42 1.41 1.41L3 17.25V21h3.75l9.42-9.42 1.41 1.42 1.42-1.42-1.42-1.41 3.13-3.12a1 1 0 0 0 0-1.42z"/></svg></button>
+          <button class="ibtn" onclick="openShare()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+        </div>
+      </div>
+      <div class="codes-strip">
+        <div class="code-pill" onclick="showToast('HEX copied!')"><div class="cp-tag">HEX</div><div class="cp-val">#1C1C1C</div></div>
+        <div class="code-pill" onclick="showToast('RGB copied!')"><div class="cp-tag">RGB</div><div class="cp-val">28,28,28</div></div>
+        <div class="code-pill" onclick="showToast('HSB copied!')"><div class="cp-tag">HSB</div><div class="cp-val">0°,0%,11%</div></div>
+        <div class="code-pill" onclick="showToast('CMYK copied!')"><div class="cp-tag">CMYK</div><div class="cp-val">0,0,0,89</div></div>
+      </div>
+      <div class="cam-btn-row">
+        <button class="btn-main" onclick="showToast('Saved to Library!')">Save to Library</button>
+        <button class="btn-ghost" onclick="showToast('Added to palette!')">+ Palette</button>
+        <button class="btn-outline" style="padding:14px 12px;" onclick="openDetail('#1C1C1C','rgb(28,28,28)','hsb(0°,0%,11%)','cmyk(0,0,0,89)')">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12" stroke-linecap="round"/><line x1="12" y1="16" x2="12.01" y2="16" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ SCREEN: PALETTES ════ -->
+  <div class="screen" id="screen-palettes">
+    <div class="topbar">
+      <div><div class="topbar-title">Palettes</div><div class="topbar-sub">Collections</div></div>
+      <div class="topbar-actions">
+        <button class="ibtn" onclick="showToast('Search palettes')"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35" stroke-linecap="round"/></svg></button>
+        <button class="ibtn" onclick="showToast('Import palette')"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke-linecap="round"/></svg></button>
+        <button class="ibtn" onclick="openShare()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+      </div>
+    </div>
+    <div class="pill-row">
+      <div class="pill active">All</div>
+      <div class="pill">Custom</div>
+      <div class="pill">Generated</div>
+      <div class="pill">Shared</div>
+    </div>
+    <button class="add-palette-btn" onclick="showToast('New palette created!')">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Palette
+    </button>
+    <div class="plist">
+      <div class="pcard">
+        <div class="pcard-bar"><div class="psw" style="background:#C0392B"></div><div class="psw" style="background:#2ECC71"></div><div class="psw" style="background:#1ABC9C"></div><div class="psw" style="background:#F39C12"></div><div class="psw" style="background:#E91E8C"></div></div>
+        <div class="pcard-info"><div class="pcard-name">Zimmer</div><div class="pcard-meta">5 colors</div><div class="pcard-actions"><button class="pcard-btn" onclick="showToast('Zimmer copied!')"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button><button class="pcard-btn" onclick="openShare()"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button><button class="pcard-btn" onclick="showToast('Zimmer deleted')"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button></div></div>
+      </div>
+      <div class="pcard">
+        <div class="pcard-bar"><div class="psw" style="background:#FBCE50"></div><div class="psw" style="background:#FBAF1A"></div><div class="psw" style="background:#E67E22"></div><div class="psw" style="background:#C0392B"></div><div class="psw" style="background:#8E44AD"></div><div class="psw" style="background:#505518"></div></div>
+        <div class="pcard-info"><div class="pcard-name">Supernova</div><div class="pcard-meta">6 colors</div><div class="pcard-actions"><button class="pcard-btn" onclick="showToast('Supernova copied!')"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button><button class="pcard-btn" onclick="openShare()"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button><button class="pcard-btn" onclick="showToast('Supernova deleted')"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button></div></div>
+      </div>
+      <div class="pcard">
+        <div class="pcard-bar"><div class="psw" style="background:#0a0a0a"></div><div class="psw" style="background:#1c1c1c"></div><div class="psw" style="background:#2e2e2e"></div><div class="psw" style="background:#888"></div><div class="psw" style="background:#f5f5f0"></div></div>
+        <div class="pcard-info"><div class="pcard-name">Mono Studio</div><div class="pcard-meta">5 colors</div><div class="pcard-actions"><button class="pcard-btn" onclick="showToast('Mono Studio copied!')"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button><button class="pcard-btn" onclick="openShare()"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button><button class="pcard-btn"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button></div></div>
+      </div>
+      <div class="pcard">
+        <div class="pcard-bar"><div class="psw" style="background:#E1FEE0"></div><div class="psw" style="background:#1ABC9C"></div><div class="psw" style="background:#5386C0"></div><div class="psw" style="background:#34495E"></div></div>
+        <div class="pcard-info"><div class="pcard-name">Ocean Calm</div><div class="pcard-meta">4 colors</div><div class="pcard-actions"><button class="pcard-btn" onclick="showToast('Ocean Calm copied!')"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button><button class="pcard-btn" onclick="openShare()"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button><button class="pcard-btn"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button></div></div>
+      </div>
+      <div class="pcard">
+        <div class="pcard-bar"><div class="psw" style="background:#E9DEC6"></div><div class="psw" style="background:#FBAF1A"></div><div class="psw" style="background:#E67E22"></div><div class="psw" style="background:#C0392B"></div></div>
+        <div class="pcard-info"><div class="pcard-name">Desert Dusk</div><div class="pcard-meta">4 colors</div><div class="pcard-actions"><button class="pcard-btn" onclick="showToast('Desert Dusk copied!')"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button><button class="pcard-btn" onclick="openShare()"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button><button class="pcard-btn"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ SCREEN: DETAIL ════ -->
+  <div class="screen" id="screen-detail">
+    <div class="detail-hero">
+      <div class="detail-hero-color dhero-color" id="dhero"></div>
+      <div class="dhero-btns">
+        <button class="dhero-btn" id="detail-back-btn" onclick="switchScreen('colors')"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round"/></svg></button>
+        <div class="dhero-right">
+          <button class="dhero-btn" onclick="showToast('Added to favorites!')"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
+          <button class="dhero-btn" onclick="openEditName()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="dhero-btn" onclick="openShare()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+          <button class="dhero-btn danger" onclick="showToast('Color deleted')"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+        </div>
+      </div>
+      <div class="dhero-name-overlay"><span id="d-name">Steel Blue</span></div>
+    </div>
+    <div class="dbody">
+      <div class="dsection">
+        <div class="dsec-title">Color Codes — tap to copy</div>
+        <div class="codes-2x2">
+          <div class="codeblock" onclick="showToast('HEX copied!')"><div class="cb-label">HEX</div><div class="cb-val" id="d-hex">#5386C0</div><div class="copy-hint">Tap to copy</div></div>
+          <div class="codeblock" onclick="showToast('RGB copied!')"><div class="cb-label">RGB</div><div class="cb-val" id="d-rgb">83, 134, 192</div><div class="copy-hint">Tap to copy</div></div>
+          <div class="codeblock" onclick="showToast('HSB copied!')"><div class="cb-label">HSB</div><div class="cb-val" id="d-hsb">211°, 57%, 75%</div><div class="copy-hint">Tap to copy</div></div>
+          <div class="codeblock" onclick="showToast('CMYK copied!')"><div class="cb-label">CMYK</div><div class="cb-val" id="d-cmyk">57, 30, 0, 25</div><div class="copy-hint">Tap to copy</div></div>
+        </div>
+      </div>
+      <div class="dsection">
+        <div class="dsec-title">Edit Color</div>
+        <div class="slider-group">
+          <div class="slider-row"><div class="sl-label">R</div><div class="sl-track"><div class="sl-thumb" style="left:calc(32% - 8px)"></div></div><div class="sl-val">83</div></div>
+          <div class="slider-row"><div class="sl-label">G</div><div class="sl-track"><div class="sl-thumb" style="left:calc(52% - 8px)"></div></div><div class="sl-val">134</div></div>
+          <div class="slider-row"><div class="sl-label">B</div><div class="sl-track"><div class="sl-thumb" style="left:calc(75% - 8px)"></div></div><div class="sl-val">192</div></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button class="btn-main" onclick="showToast('Color updated!')">Apply Changes</button>
+          <button class="btn-ghost" onclick="showToast('Reset to original')">Reset</button>
+        </div>
+      </div>
+      <div class="dsection">
+        <div class="dsec-title">Color Combinations</div>
+        <div class="combos-row">
+          <div class="combo" onclick="showToast('Complementary copied')"><div class="combo-swatches"><div style="background:#C07653"></div><div id="combo-c" style="background:#5386C0"></div></div><div class="combo-label">Complementary</div></div>
+          <div class="combo" onclick="showToast('Analogous copied')"><div class="combo-swatches"><div id="combo-a1" style="background:#5386C0"></div><div style="background:#5399C0"></div><div style="background:#536DC0"></div></div><div class="combo-label">Analogous</div></div>
+          <div class="combo" onclick="showToast('Monochromatic copied')"><div class="combo-swatches"><div style="background:#1a3a5c"></div><div id="combo-m" style="background:#5386C0"></div><div style="background:#a8caed"></div></div><div class="combo-label">Mono</div></div>
+          <div class="combo" onclick="showToast('Triadic copied')"><div class="combo-swatches"><div id="combo-t" style="background:#5386C0"></div><div style="background:#C05386"></div><div style="background:#86C053"></div></div><div class="combo-label">Triadic</div></div>
+          <div class="combo" onclick="showToast('Tetradic copied')"><div class="combo-swatches"><div id="combo-q" style="background:#5386C0"></div><div style="background:#C08653"></div><div style="background:#86C053"></div><div style="background:#C05386"></div></div><div class="combo-label">Tetradic</div></div>
+        </div>
+      </div>
+      <div class="dsection">
+        <div class="dsec-title">Contrast Checker</div>
+        <div class="contrast-cards">
+          <div class="contrast-card"><div class="cc-swatches"><div class="cc-swatch" id="cc-s1" style="background:#5386C0"></div><div class="cc-swatch" style="background:#fff;border-color:#ddd"></div></div><div class="cc-info"><div class="cc-title">vs. White</div><div class="cc-ratio">3.2:1 · AA Fail</div></div><span class="badge-fail">FAIL</span></div>
+          <div class="contrast-card"><div class="cc-swatches"><div class="cc-swatch" id="cc-s2" style="background:#5386C0"></div><div class="cc-swatch" style="background:#000"></div></div><div class="cc-info"><div class="cc-title">vs. Black</div><div class="cc-ratio">6.5:1 · AA Pass</div></div><span class="badge-pass">PASS</span></div>
+          <div class="contrast-card"><div class="cc-swatches"><div class="cc-swatch" id="cc-s3" style="background:#5386C0"></div><div class="cc-swatch" style="background:#f5f5f0"></div></div><div class="cc-info"><div class="cc-title">vs. Off-white</div><div class="cc-ratio">3.0:1 · AA Fail</div></div><span class="badge-fail">FAIL</span></div>
+        </div>
+      </div>
+      <div class="dsection">
+        <div class="dsec-title">Generated Palette</div>
+        <div class="gen-palette">
+          <div class="gp-swatch" style="background:#0d2240" onclick="showToast('#0D2240 copied!')"></div>
+          <div class="gp-swatch" style="background:#1a3a5c" onclick="showToast('#1A3A5C copied!')"></div>
+          <div class="gp-swatch current" id="gp-current" style="background:#5386C0" onclick="showToast('Current color')"></div>
+          <div class="gp-swatch" style="background:#85aedd" onclick="showToast('#85AEDD copied!')"></div>
+          <div class="gp-swatch" style="background:#c2d8f0" onclick="showToast('#C2D8F0 copied!')"></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-main" style="flex:1" onclick="openShare()">Share Palette</button>
+          <button class="btn-ghost" onclick="showToast('Added to collections!')">Save</button>
+        </div>
+      </div>
+      <div class="dsection">
+        <div class="dsec-title">Add to Palette</div>
+        <div class="tags-row">
+          <div class="tag active-tag">Zimmer</div>
+          <div class="tag">Supernova</div>
+          <div class="tag">Ocean Calm</div>
+          <div class="tag">Desert Dusk</div>
+          <div class="tag">Mono Studio</div>
+          <div class="tag">+ New</div>
+        </div>
+        <button class="btn-main" style="width:100%;margin-top:12px;" onclick="showToast('Added to Zimmer!')">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ SCREEN: EXPLORE ════ -->
+  <div class="screen" id="screen-explore">
+    <div class="topbar">
+      <div><div class="topbar-title">Explore</div><div class="topbar-sub">Discover Colors</div></div>
+      <div class="topbar-actions">
+        <button class="ibtn" onclick="showToast('Search trending')"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35" stroke-linecap="round"/></svg></button>
+      </div>
+    </div>
+    <div class="explore-scroll">
+      <div class="color-of-day" onclick="openDetail('#1C1C1C','rgb(28,28,28)','hsb(0°,0%,11%)','cmyk(0,0,0,89)')">
+        <div class="cod-color" style="background:linear-gradient(135deg,#0a0a0a,#2e2e2e)">
+          <div class="cod-label">Obsidian Night</div>
+          <div class="cod-tag">#1C1C1C</div>
+        </div>
+        <div class="cod-footer">
+          <div><div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-family:'Syne',sans-serif;">Color of the Day</div><div class="cod-hex">#1C1C1C</div></div>
+          <div class="cod-actions">
+            <button class="ibtn" onclick="event.stopPropagation();showToast('Saved!')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
+            <button class="ibtn" onclick="event.stopPropagation();openShare()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="explore-section">
+        <div class="explore-sec-header"><div class="explore-sec-title">Trending Palettes</div><div class="explore-see-all" onclick="switchScreen('palettes')">See All →</div></div>
+        <div class="trending-row">
+          <div class="trend-card" onclick="showToast('Monochrome opened')"><div class="trend-bar"><div style="background:#111"></div><div style="background:#333"></div><div style="background:#666"></div><div style="background:#ccc"></div></div><div class="trend-info"><div class="trend-name">Monochrome</div><div class="trend-count">2.1k saves</div></div></div>
+          <div class="trend-card" onclick="showToast('Sunset Fade opened')"><div class="trend-bar"><div style="background:#C0392B"></div><div style="background:#E67E22"></div><div style="background:#FBCE50"></div></div><div class="trend-info"><div class="trend-name">Sunset Fade</div><div class="trend-count">1.8k saves</div></div></div>
+          <div class="trend-card" onclick="showToast('Deep Ocean opened')"><div class="trend-bar"><div style="background:#0d2240"></div><div style="background:#5386C0"></div><div style="background:#c2d8f0"></div></div><div class="trend-info"><div class="trend-name">Deep Ocean</div><div class="trend-count">1.4k saves</div></div></div>
+          <div class="trend-card" onclick="showToast('Botanical opened')"><div class="trend-bar"><div style="background:#505518"></div><div style="background:#2ECC71"></div><div style="background:#E1FEE0"></div></div><div class="trend-info"><div class="trend-name">Botanical</div><div class="trend-count">980 saves</div></div></div>
+        </div>
+      </div>
+
+      <div class="explore-section">
+        <div class="explore-sec-header"><div class="explore-sec-title">Recent Colors</div><div class="explore-see-all" onclick="switchScreen('colors')">See All →</div></div>
+        <div class="recent-colors">
+          <div class="mini-color" style="background:#0a0a0a;border-color:#333" onclick="openDetail('#0A0A0A','rgb(10,10,10)','hsb(0°,0%,4%)','cmyk(0,0,0,96)')"></div>
+          <div class="mini-color" style="background:#5386C0" onclick="openDetail('#5386C0','rgb(83,134,192)','hsb(211°,57%,75%)','cmyk(57,30,0,25)')"></div>
+          <div class="mini-color" style="background:#FBCE50" onclick="openDetail('#FBCE50','rgb(251,206,80)','hsb(44°,68%,98%)','cmyk(0,18,68,2)')"></div>
+          <div class="mini-color" style="background:#C0392B" onclick="openDetail('#C0392B','rgb(192,57,43)','hsb(5°,78%,75%)','cmyk(0,70,78,25)')"></div>
+          <div class="mini-color" style="background:#2ECC71" onclick="openDetail('#2ECC71','rgb(46,204,113)','hsb(145°,77%,80%)','cmyk(77,0,45,20)')"></div>
+          <div class="mini-color" style="background:#8E44AD" onclick="openDetail('#8E44AD','rgb(142,68,173)','hsb(283°,61%,68%)','cmyk(18,61,0,32)')"></div>
+          <div class="mini-color" style="background:#E9DEC6" onclick="openDetail('#E9DEC6','rgb(233,222,198)','hsb(40°,15%,91%)','cmyk(0,5,15,9)')"></div>
+        </div>
+      </div>
+
+      <div class="watch-banner" onclick="showToast('Opening Watch companion')">
+        <div class="watch-ico">⌚</div>
+        <div class="watch-text"><h4>Apple Watch App</h4><p>Access your colors on your wrist</p></div>
+        <div class="watch-arrow"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ SCREEN: SETTINGS ════ -->
+  <div class="screen" id="screen-settings">
+    <div class="topbar"><div><div class="topbar-title">Settings</div><div class="topbar-sub">Preferences</div></div></div>
+    <div class="settings-body">
+      <div class="settings-profile">
+        <div class="profile-avatar">L</div>
+        <div class="profile-info"><h3>Litur Pro</h3><p>145 colors · 8 palettes</p></div>
+        <div class="profile-badge">v20.0</div>
+      </div>
+
+      <div class="s-section-label">Appearance</div>
+      <div class="sgroup">
+        <div class="srow" onclick="showToast('Theme: Light mode')"><div class="srow-icon" style="background:#1e1e1e;"><svg width="15" height="15" fill="none" stroke="#f5f5f0" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></div><span class="srow-label">Theme</span><span class="srow-val">Dark</span><svg class="schev" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div class="srow" onclick="showToast('Grid: 4 columns')"><div class="srow-icon" style="background:#1e1e1e;"><svg width="15" height="15" fill="none" stroke="#f5f5f0" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div><span class="srow-label">Grid Layout</span><span class="srow-val">3 col</span><svg class="schev" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div class="srow" onclick="showToast('Color name display toggled')"><div class="srow-icon" style="background:#1e1e1e;"><svg width="15" height="15" fill="none" stroke="#f5f5f0" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div><span class="srow-label">Show Names</span><div class="toggle on" onclick="event.stopPropagation();this.classList.toggle('on');showToast('Names '+(this.classList.contains('on')?'shown':'hidden'))"></div></div>
+      </div>
+
+      <div class="s-section-label">Color Codes</div>
+      <div class="sgroup">
+        <div class="srow" onclick="showToast('Default format: RGB')"><div class="srow-icon" style="background:#1e1e1e;"><svg width="15" height="15" fill="none" stroke="#f5f5f0" stroke-width="2" viewBox="0 0 24 24"><path d="M7 8h10M7 12h8M7 16h6" stroke-linecap="round"/></svg></div><span class="srow-label">Copy Format</span><span class="srow-val">HEX</span><svg class="schev" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div class="srow"><div class="srow-icon" style="background:#1e1e1e;"><svg width="15" height="15" fill="none" stroke="#f5f5f0" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><span class="srow-label">Auto-detect Names</span><div class="toggle on" onclick="event.stopPropagation();this.classList.toggle('on');"></div></div>
+        <div class="srow"><div class="srow-icon" style="background:#1e1e1e;"><svg width="15" height="15" fill="none" stroke="#f5f5f0" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><span class="srow-label">Haptic Feedback</span><div class="toggle" onclick="event.stopPropagation();this.classList.toggle('on');"></div></div>
+      </div>
+
+      <div class="s-section-label">Sync & Backup</div>
+      <div class="sgroup">
+        <div class="srow"><div class="srow-icon" style="background:#1e1e1e;"><svg width="15" height="15" fill="none" stroke="#f5f5f0" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></div><span class="srow-label">iCloud Sync</span><div class="toggle on" onclick="event.stopPropagation();this.classList.toggle('on');showToast('Sync '+(this.classList.contains('on')?'on':'off'))"></div></div>
+        <div class="srow" onclick="showToast('Syncing now...')"><div class="srow-icon" style="background:#1e1e1e;"><svg width="15" height="15" fill="none" stroke="#f5f5f0" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3" stroke-linecap="round"/></svg></div><span class="srow-label">Sync Now</span><span class="srow-val">2 min ago</span><svg class="schev" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div class="srow" onclick="showToast('Backup exported!')"><div class="srow-icon" style="background:#1e1e1e;"><svg width="15" height="15" fill="none" stroke="#f5f5f0" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-linecap="round"/></svg></div><span class="srow-label">Export Backup</span><svg class="schev" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div class="srow" onclick="showToast('Import started')"><div class="srow-icon" style="background:#1e1e1e;"><svg width="15" height="15" fill="none" stroke="#f5f5f0" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke-linecap="round"/></svg></div><span class="srow-label">Import Colors</span><svg class="schev" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+      </div>
+
+      <div class="s-section-label">About</div>
+      <div class="sgroup">
+        <div class="srow" onclick="showToast('Opening litur.app')"><div class="srow-icon" style="background:#1e1e1e;"><svg width="15" height="15" fill="none" stroke="#f5f5f0" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg></div><span class="srow-label">Developer Website</span><svg class="schev" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
+        <div class="srow" onclick="showToast('Opening Privacy Policy')"><div class="srow-icon" style="background:#1e1e1e;"><svg width="15" height="15" fill="none" stroke="#f5f5f0" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><span class="srow-label">Privacy Policy</span><svg class="schev" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div class="srow" onclick="showToast('Feedback form opened')"><div class="srow-icon" style="background:#1e1e1e;"><svg width="15" height="15" fill="none" stroke="#f5f5f0" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><span class="srow-label">Send Feedback</span><svg class="schev" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div class="srow" onclick="showToast('⭐ Thank you!')"><div class="srow-icon" style="background:#1e1e1e;"><svg width="15" height="15" fill="#f5f5f0" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><span class="srow-label">Rate Litur</span><svg class="schev" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div class="srow danger" onclick="showToast('All colors cleared (demo)')"><div class="srow-icon" style="background:#1e1e1e;"><svg width="15" height="15" fill="none" stroke="#ff4444" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></div><span class="srow-label" style="color:#ff4444">Clear All Colors</span><svg class="schev" width="14" height="14" fill="none" stroke="#ff4444" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ TAB BAR ════ -->
+  <div class="tabbar">
+    <button class="tab active" id="tab-colors" onclick="switchScreen('colors')">
+      <div class="tab-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="var(--muted)" stroke-width="1.8" id="ti-colors"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></div>
+      <span class="tab-lbl">Library</span>
+    </button>
+    <button class="tab" id="tab-explore" onclick="switchScreen('explore')">
+      <div class="tab-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="var(--muted)" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div>
+      <span class="tab-lbl">Explore</span>
+    </button>
+    <button class="tab cam-tab" id="tab-camera" onclick="switchScreen('camera')">
+      <div class="tab-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="var(--black)" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+      <span class="tab-lbl">Picker</span>
+    </button>
+    <button class="tab" id="tab-palettes" onclick="switchScreen('palettes')">
+      <div class="tab-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="var(--muted)" stroke-width="1.8"><rect x="3" y="3" width="18" height="4" rx="1"/><rect x="3" y="10" width="14" height="4" rx="1"/><rect x="3" y="17" width="9" height="4" rx="1"/></svg></div>
+      <span class="tab-lbl">Palettes</span>
+    </button>
+    <button class="tab" id="tab-settings" onclick="switchScreen('settings')">
+      <div class="tab-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="var(--muted)" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+      <span class="tab-lbl">Settings</span>
+    </button>
+  </div>
+
+  <!-- ════ OVERLAYS ════ -->
+  <div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+  <!-- SHARE SHEET -->
+  <div class="bsheet" id="share-sheet">
+    <div class="bsheet-handle"></div>
+    <div class="bsheet-title">Share</div>
+    <div class="bsheet-body">
+      <div class="share-grid">
+        <div class="share-item" onclick="showToast('Link copied!');closeAll()"><div class="share-ico">🔗</div><span class="share-lbl">Copy Link</span></div>
+        <div class="share-item" onclick="showToast('Saved to Photos!');closeAll()"><div class="share-ico">🖼️</div><span class="share-lbl">Save Image</span></div>
+        <div class="share-item" onclick="showToast('Opened Messages');closeAll()"><div class="share-ico">💬</div><span class="share-lbl">Messages</span></div>
+        <div class="share-item" onclick="showToast('Opened Instagram');closeAll()"><div class="share-ico">📸</div><span class="share-lbl">Instagram</span></div>
+        <div class="share-item" onclick="showToast('Opened Twitter');closeAll()"><div class="share-ico">🐦</div><span class="share-lbl">X (Twitter)</span></div>
+        <div class="share-item" onclick="showToast('Opened Pinterest');closeAll()"><div class="share-ico">📌</div><span class="share-lbl">Pinterest</span></div>
+        <div class="share-item" onclick="showToast('Opened Figma');closeAll()"><div class="share-ico">🎨</div><span class="share-lbl">Figma</span></div>
+        <div class="share-item" onclick="showToast('More options');closeAll()"><div class="share-ico">⋯</div><span class="share-lbl">More</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SORT MODAL -->
+  <div class="bsheet" id="sort-sheet">
+    <div class="bsheet-handle"></div>
+    <div class="bsheet-title">Sort & Filter</div>
+    <div class="bsheet-body">
+      <div class="s-section-label">Sort By</div>
+      <div class="sgroup">
+        <div class="srow active-sort" onclick="setSortActive(this);showToast('Sorted by Date Added')"><span class="srow-label">Date Added</span><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="srow" onclick="setSortActive(this);showToast('Sorted by Name')"><span class="srow-label">Name A–Z</span></div>
+        <div class="srow" onclick="setSortActive(this);showToast('Sorted by Hue')"><span class="srow-label">Hue</span></div>
+        <div class="srow" onclick="setSortActive(this);showToast('Sorted by Brightness')"><span class="srow-label">Brightness</span></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;">
+        <button class="btn-main" style="flex:1" onclick="closeAll()">Apply</button>
+        <button class="btn-ghost" onclick="closeAll()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT NAME MODAL -->
+  <div class="modal" id="name-modal">
+    <div class="modal-header">
+      <div class="modal-title">Rename Color</div>
+      <button class="ibtn" onclick="closeModal('name-modal')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <input class="name-input" type="text" placeholder="Enter color name…" value="Steel Blue"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-main" style="flex:1" onclick="showToast('Name saved!');closeModal('name-modal');closeAll()">Save</button>
+      <button class="btn-ghost" onclick="closeModal('name-modal');closeAll()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+const screens = ['colors','camera','palettes','detail','explore','settings'];
+const colorNames = {'#0F0F0F':'Jet Black','#1A1A1A':'Carbon','#2E2E2E':'Graphite','#505518':'Forest Shadow','#5386C0':'Steel Blue','#FBCE50':'Sunflower','#C0392B':'Crimson','#2ECC71':'Emerald','#E1FEE0':'Mint Frost','#8E44AD':'Amethyst','#E67E22':'Tangerine','#E9DEC6':'Desert Sand','#1C1C1C':'Graphite Black','#0A0A0A':'Void Black'};
+
+function switchScreen(name){
+  screens.forEach(s=>{
+    document.getElementById('screen-'+s)?.classList.remove('active');
+    document.getElementById('tab-'+s)?.classList.remove('active');
+  });
+  document.getElementById('screen-'+name)?.classList.add('active');
+  document.getElementById('tab-'+name)?.classList.add('active');
+  closeAll();
+}
+
+function openDetail(hex,rgb,hsb,cmyk){
+  document.getElementById('dhero').style.background = hex;
+  document.getElementById('d-name').textContent = colorNames[hex]||'Custom Color';
+  document.getElementById('d-hex').textContent = hex;
+  document.getElementById('d-rgb').textContent = rgb;
+  document.getElementById('d-hsb').textContent = hsb;
+  document.getElementById('d-cmyk').textContent = cmyk;
+  ['cc-s1','cc-s2','cc-s3'].forEach(id=>document.getElementById(id).style.background=hex);
+  document.getElementById('gp-current').style.background=hex;
+  document.getElementById('combo-c').style.background=hex;
+  document.getElementById('combo-a1').style.background=hex;
+  document.getElementById('combo-m').style.background=hex;
+  document.getElementById('combo-t').style.background=hex;
+  document.getElementById('combo-q').style.background=hex;
+  // update back button to go back to previous screen
+  switchScreen('detail');
+}
+
+let toastT;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+function openShare(){
+  document.getElementById('share-sheet').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+function openSortModal(){
+  document.getElementById('sort-sheet').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+function openEditName(){
+  document.getElementById('name-modal').classList.add('show');
+  document.getElementById('overlay').classList.add('show');
+}
+function closeModal(id){
+  document.getElementById(id).classList.remove('show');
+}
+function closeAll(){
+  document.getElementById('share-sheet').classList.remove('open');
+  document.getElementById('sort-sheet').classList.remove('open');
+  document.getElementById('name-modal').classList.remove('show');
+  document.getElementById('overlay').classList.remove('show');
+}
+function openSearch(){
+  showToast('Search: type to filter colors');
+}
+function setZoom(btn,label){
+  document.querySelectorAll('.zoom-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  showToast('Zoom '+label);
+}
+function toggleFav(el){
+  el.classList.toggle('starred');
+  showToast(el.classList.contains('starred')?'Added to favorites':'Removed from favorites');
+}
+function setSortActive(row){
+  document.querySelectorAll('#sort-sheet .srow').forEach(r=>r.style.color='');
+  row.style.color='var(--white)';
+}
+// pill tab switching
+document.querySelectorAll('.pill-row .pill').forEach(p=>{
+  p.addEventListener('click',()=>{
+    p.closest('.pill-row').querySelectorAll('.pill').forEach(x=>x.classList.remove('active'));
+    p.classList.add('active');
+    showToast('Filter: '+p.textContent);
+  });
+});
+document.querySelectorAll('.tags-row .tag').forEach(t=>{
+  t.addEventListener('click',()=>{
+    t.classList.toggle('active-tag');
+  });
+});
+</script>
+</body>
+</html>
