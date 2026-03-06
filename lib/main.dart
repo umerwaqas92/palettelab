@@ -467,22 +467,24 @@ class _PhoneShellState extends State<PhoneShell> {
   Widget _buildCamTab() {
     return GestureDetector(
       onTap: () => _onTabTapped(2),
-      child: Container(
-        width: 46,
-        height: 46,
-        margin: const EdgeInsets.only(top: -16),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x26ffffff),
-              blurRadius: 20,
-              offset: Offset(0, 4),
-            ),
-          ],
+      child: Transform.translate(
+        offset: const Offset(0, -16),
+        child: Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x26ffffff),
+                blurRadius: 20,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: const Icon(Icons.camera_alt, color: Colors.black, size: 20),
         ),
-        child: const Icon(Icons.camera_alt, color: Colors.black, size: 20),
       ),
     );
   }
