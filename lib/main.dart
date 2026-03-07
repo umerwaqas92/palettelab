@@ -22,6 +22,22 @@ class LiturApp extends StatelessWidget {
           surface: Color(0xFF050505),
           primary: Colors.white,
         ),
+        textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme).copyWith(
+          bodyLarge: GoogleFonts.inter(fontWeight: FontWeight.bold),
+          bodyMedium: GoogleFonts.inter(fontWeight: FontWeight.bold),
+          displayLarge: GoogleFonts.inter(fontWeight: FontWeight.bold),
+          displayMedium: GoogleFonts.inter(fontWeight: FontWeight.bold),
+          displaySmall: GoogleFonts.inter(fontWeight: FontWeight.bold),
+          headlineLarge: GoogleFonts.inter(fontWeight: FontWeight.bold),
+          headlineMedium: GoogleFonts.inter(fontWeight: FontWeight.bold),
+          headlineSmall: GoogleFonts.inter(fontWeight: FontWeight.bold),
+          titleLarge: GoogleFonts.inter(fontWeight: FontWeight.bold),
+          titleMedium: GoogleFonts.inter(fontWeight: FontWeight.bold),
+          titleSmall: GoogleFonts.inter(fontWeight: FontWeight.bold),
+          labelLarge: GoogleFonts.inter(fontWeight: FontWeight.bold),
+          labelMedium: GoogleFonts.inter(fontWeight: FontWeight.bold),
+          labelSmall: GoogleFonts.inter(fontWeight: FontWeight.bold),
+        ),
       ),
       home: const PhoneShell(),
     );
@@ -231,7 +247,7 @@ class _ToastWidgetState extends State<_ToastWidget> {
             ),
             child: Text(
               widget.message,
-              style: GoogleFonts.syne(
+              style: GoogleFonts.inter(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
                 color: AppColors.black,
@@ -322,6 +338,7 @@ class _PhoneShellState extends State<PhoneShell> {
                           ],
                         ),
               ),
+              SizedBox(height: 100 + MediaQuery.of(context).padding.bottom),
             ],
           ),
           if (!_showDetail) _buildTabBar(),
@@ -338,7 +355,7 @@ class _PhoneShellState extends State<PhoneShell> {
         children: [
           Text(
             '9:41',
-            style: GoogleFonts.syne(
+            style: GoogleFonts.inter(
               fontSize: 16,
               fontWeight: FontWeight.w800,
               color: AppColors.white,
@@ -371,7 +388,7 @@ class _PhoneShellState extends State<PhoneShell> {
             const SizedBox(height: 3),
             Text(
               label,
-              style: GoogleFonts.syne(
+              style: GoogleFonts.inter(
                 fontSize: 9,
                 fontWeight: FontWeight.w700,
                 color: isActive ? AppColors.white : AppColors.muted2,
@@ -400,7 +417,7 @@ class _PhoneShellState extends State<PhoneShell> {
             ),
           ],
         ),
-        child: const Icon(Icons.camera_alt_outlined, color: Colors.black, size: 24),
+        child: const Icon(Icons.add, color: Colors.black, size: 24),
       ),
     );
   }
@@ -462,7 +479,7 @@ class ColorsScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Colors',
-                    style: GoogleFonts.playfairDisplay(
+                    style: GoogleFonts.inter(
                       fontSize: 34,
                       fontWeight: FontWeight.w900,
                       color: AppColors.white,
@@ -527,7 +544,7 @@ class ColorsScreen extends StatelessWidget {
                       child: Center(
                         child: Text(
                           filter,
-                          style: GoogleFonts.syne(
+                          style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: isActive ? AppColors.black : AppColors.muted,
@@ -560,29 +577,6 @@ class ColorsScreen extends StatelessWidget {
               ),
             ),
           ],
-        ),
-        Positioned(
-          bottom: 110,
-          right: 24,
-          child: GestureDetector(
-            onTap: onCameraTap,
-            child: Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x66000000),
-                    blurRadius: 32,
-                    offset: Offset(0, 12),
-                  ),
-                ],
-              ),
-              child: const Icon(Icons.add, color: Colors.black, size: 24),
-            ),
-          ),
         ),
       ],
     );
@@ -646,7 +640,7 @@ class _StatCard extends StatelessWidget {
         child: Center(
           child: Text(
             num,
-            style: GoogleFonts.syne(
+            style: GoogleFonts.inter(
               fontSize: 26,
               fontWeight: FontWeight.w800,
               color: AppColors.white,
@@ -683,7 +677,7 @@ class _ColorCard extends StatelessWidget {
               left: 14,
               child: Text(
                 color.hex,
-                style: GoogleFonts.jetBrainsMono(
+                style: GoogleFonts.inter(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   color: (color.r + color.g + color.b) / 3 > 128
@@ -726,7 +720,7 @@ class _SortSheet extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             'Sort & Filter',
-            style: GoogleFonts.playfairDisplay(
+            style: GoogleFonts.inter(
               fontSize: 20,
               fontWeight: FontWeight.w700,
               color: AppColors.white,
@@ -735,7 +729,7 @@ class _SortSheet extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             'Sort By',
-            style: GoogleFonts.syne(
+            style: GoogleFonts.inter(
               fontSize: 10,
               fontWeight: FontWeight.w700,
               letterSpacing: 2,
@@ -781,7 +775,7 @@ class _SortOption extends StatelessWidget {
         children: [
           Text(
             label,
-            style: GoogleFonts.syne(
+            style: GoogleFonts.inter(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: AppColors.white,
@@ -821,7 +815,7 @@ class _ShareSheet extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             'Share',
-            style: GoogleFonts.playfairDisplay(
+            style: GoogleFonts.inter(
               fontSize: 20,
               fontWeight: FontWeight.w700,
               color: AppColors.white,
@@ -879,7 +873,7 @@ class _ShareItem extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             label,
-            style: GoogleFonts.syne(
+            style: GoogleFonts.inter(
               fontSize: 10,
               fontWeight: FontWeight.w700,
               color: AppColors.muted,
@@ -910,7 +904,7 @@ class _MainButton extends StatelessWidget {
         child: Center(
           child: Text(
             label,
-            style: GoogleFonts.syne(
+            style: GoogleFonts.inter(
               fontSize: 14,
               fontWeight: FontWeight.w700,
               color: AppColors.black,
@@ -941,7 +935,7 @@ class _GhostButton extends StatelessWidget {
         child: Center(
           child: Text(
             label,
-            style: GoogleFonts.syne(
+            style: GoogleFonts.inter(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: AppColors.white,
@@ -971,7 +965,7 @@ class ExploreScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Explore',
-                    style: GoogleFonts.playfairDisplay(
+                    style: GoogleFonts.inter(
                       fontSize: 30,
                       fontWeight: FontWeight.w900,
                       color: AppColors.white,
@@ -979,7 +973,7 @@ class ExploreScreen extends StatelessWidget {
                   ),
                   Text(
                     'Discover Colors',
-                    style: GoogleFonts.syne(
+                    style: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 2,
@@ -1047,7 +1041,7 @@ class _ColorOfDay extends StatelessWidget {
                   left: 14,
                   child: Text(
                     'Obsidian Night',
-                    style: GoogleFonts.playfairDisplay(
+                    style: GoogleFonts.inter(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
@@ -1068,7 +1062,7 @@ class _ColorOfDay extends StatelessWidget {
                     ),
                     child: Text(
                       '#1C1C1C',
-                      style: GoogleFonts.jetBrainsMono(
+                      style: GoogleFonts.inter(
                         fontSize: 10,
                         color: Colors.white70,
                       ),
@@ -1092,7 +1086,7 @@ class _ColorOfDay extends StatelessWidget {
                   children: [
                     Text(
                       'Color of the Day',
-                      style: GoogleFonts.syne(
+                      style: GoogleFonts.inter(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1,
@@ -1101,7 +1095,7 @@ class _ColorOfDay extends StatelessWidget {
                     ),
                     Text(
                       '#1C1C1C',
-                      style: GoogleFonts.jetBrainsMono(
+                      style: GoogleFonts.inter(
                         fontSize: 12,
                         color: AppColors.white,
                       ),
@@ -1146,7 +1140,7 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: GoogleFonts.syne(
+          style: GoogleFonts.inter(
             fontSize: 15,
             fontWeight: FontWeight.w700,
             color: AppColors.white,
@@ -1154,7 +1148,7 @@ class _SectionHeader extends StatelessWidget {
         ),
         Text(
           action,
-          style: GoogleFonts.syne(
+          style: GoogleFonts.inter(
             fontSize: 11,
             fontWeight: FontWeight.w600,
             color: AppColors.muted,
@@ -1232,7 +1226,7 @@ class _TrendCard extends StatelessWidget {
               children: [
                 Text(
                   name,
-                  style: GoogleFonts.syne(
+                  style: GoogleFonts.inter(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: AppColors.white,
@@ -1240,7 +1234,7 @@ class _TrendCard extends StatelessWidget {
                 ),
                 Text(
                   '$count saves',
-                  style: GoogleFonts.syne(fontSize: 10, color: AppColors.muted),
+                  style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.muted),
                 ),
               ],
             ),
@@ -1296,7 +1290,7 @@ class _WatchBanner extends StatelessWidget {
               children: [
                 Text(
                   'Apple Watch App',
-                  style: GoogleFonts.syne(
+                  style: GoogleFonts.inter(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: AppColors.white,
@@ -1304,7 +1298,7 @@ class _WatchBanner extends StatelessWidget {
                 ),
                 Text(
                   'Access your colors on your wrist',
-                  style: GoogleFonts.syne(fontSize: 11, color: AppColors.muted),
+                  style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.muted),
                 ),
               ],
             ),
@@ -1342,7 +1336,7 @@ class _PickerScreenState extends State<PickerScreen> {
                 children: [
                   Text(
                     'Picker',
-                    style: GoogleFonts.playfairDisplay(
+                    style: GoogleFonts.inter(
                       fontSize: 30,
                       fontWeight: FontWeight.w900,
                       color: AppColors.white,
@@ -1350,7 +1344,7 @@ class _PickerScreenState extends State<PickerScreen> {
                   ),
                   Text(
                     'Point & Capture',
-                    style: GoogleFonts.syne(
+                    style: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 2,
@@ -1407,7 +1401,7 @@ class _PickerScreenState extends State<PickerScreen> {
                         ),
                         child: Text(
                           z,
-                          style: GoogleFonts.syne(
+                          style: GoogleFonts.inter(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color:
@@ -1465,13 +1459,13 @@ class _PickerScreenState extends State<PickerScreen> {
                   ],
                 ),
               ),
-              const Positioned(
+              Positioned(
                 bottom: 16,
                 child: Text(
                   'TAP TO LOCK',
-                  style: TextStyle(
-                    fontFamily: 'JetBrains Mono',
+                  style: GoogleFonts.inter(
                     fontSize: 11,
+                    fontWeight: FontWeight.bold,
                     color: Colors.white38,
                     letterSpacing: 2,
                   ),
@@ -1506,7 +1500,7 @@ class _PickerScreenState extends State<PickerScreen> {
                       children: [
                         Text(
                           'Graphite Black',
-                          style: GoogleFonts.syne(
+                          style: GoogleFonts.inter(
                             fontSize: 17,
                             fontWeight: FontWeight.w700,
                             color: AppColors.white,
@@ -1514,8 +1508,9 @@ class _PickerScreenState extends State<PickerScreen> {
                         ),
                         Text(
                           '#1C1C1C · Auto-detected',
-                          style: GoogleFonts.jetBrainsMono(
+                          style: GoogleFonts.inter(
                             fontSize: 11,
+                            fontWeight: FontWeight.bold,
                             color: AppColors.muted,
                           ),
                         ),
@@ -1718,7 +1713,7 @@ class _CodePill extends StatelessWidget {
           children: [
             Text(
               tag,
-              style: GoogleFonts.syne(
+              style: GoogleFonts.inter(
                 fontSize: 9,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 1.5,
@@ -1727,7 +1722,7 @@ class _CodePill extends StatelessWidget {
             ),
             Text(
               value,
-              style: GoogleFonts.jetBrainsMono(
+              style: GoogleFonts.inter(
                 fontSize: 12,
                 color: AppColors.white,
               ),
@@ -1757,7 +1752,7 @@ class PalettesScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Palettes',
-                    style: GoogleFonts.playfairDisplay(
+                    style: GoogleFonts.inter(
                       fontSize: 30,
                       fontWeight: FontWeight.w900,
                       color: AppColors.white,
@@ -1765,7 +1760,7 @@ class PalettesScreen extends StatelessWidget {
                   ),
                   Text(
                     'Collections',
-                    style: GoogleFonts.syne(
+                    style: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 2,
@@ -1813,7 +1808,7 @@ class PalettesScreen extends StatelessWidget {
                         ),
                         child: Text(
                           f,
-                          style: GoogleFonts.syne(
+                          style: GoogleFonts.inter(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color:
@@ -1845,7 +1840,7 @@ class PalettesScreen extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   'New Palette',
-                  style: GoogleFonts.syne(
+                  style: GoogleFonts.inter(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: AppColors.muted,
@@ -1909,7 +1904,7 @@ class _PaletteCard extends StatelessWidget {
               children: [
                 Text(
                   palette.name,
-                  style: GoogleFonts.syne(
+                  style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: AppColors.white,
@@ -1918,10 +1913,11 @@ class _PaletteCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   '${palette.colors.length} colors',
-                  style: GoogleFonts.jetBrainsMono(
-                    fontSize: 11,
-                    color: AppColors.muted,
-                  ),
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.muted,
+                          ),
                 ),
                 const Spacer(),
                 _IconBtn(
@@ -1969,7 +1965,7 @@ class SettingsScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Settings',
-                    style: GoogleFonts.playfairDisplay(
+                    style: GoogleFonts.inter(
                       fontSize: 30,
                       fontWeight: FontWeight.w900,
                       color: AppColors.white,
@@ -1977,7 +1973,7 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   Text(
                     'Preferences',
-                    style: GoogleFonts.syne(
+                    style: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 2,
@@ -2161,7 +2157,7 @@ class _ProfileCard extends StatelessWidget {
             child: Center(
               child: Text(
                 'L',
-                style: GoogleFonts.playfairDisplay(
+                style: GoogleFonts.inter(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
                   color: AppColors.white,
@@ -2176,7 +2172,7 @@ class _ProfileCard extends StatelessWidget {
               children: [
                 Text(
                   'Litur Pro',
-                  style: GoogleFonts.syne(
+                  style: GoogleFonts.inter(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: AppColors.white,
@@ -2184,7 +2180,7 @@ class _ProfileCard extends StatelessWidget {
                 ),
                 Text(
                   '145 colors · 8 palettes',
-                  style: GoogleFonts.syne(fontSize: 11, color: AppColors.muted),
+                  style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.muted),
                 ),
               ],
             ),
@@ -2198,7 +2194,7 @@ class _ProfileCard extends StatelessWidget {
             ),
             child: Text(
               'v20.0',
-              style: GoogleFonts.syne(
+              style: GoogleFonts.inter(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 color: AppColors.muted,
@@ -2223,7 +2219,7 @@ class _SettingsSection extends StatelessWidget {
       children: [
         Text(
           title,
-          style: GoogleFonts.syne(
+          style: GoogleFonts.inter(
             fontSize: 10,
             fontWeight: FontWeight.w700,
             letterSpacing: 2,
@@ -2295,7 +2291,7 @@ class _SettingsRowState extends State<_SettingsRow> {
             Expanded(
               child: Text(
                 widget.label,
-                style: GoogleFonts.syne(
+                style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: widget.danger ? Colors.redAccent : AppColors.white,
@@ -2330,8 +2326,9 @@ class _SettingsRowState extends State<_SettingsRow> {
             else if (widget.value != null && widget.value!.isNotEmpty)
               Text(
                 widget.value!,
-                style: GoogleFonts.jetBrainsMono(
+                style: GoogleFonts.inter(
                   fontSize: 12,
+                  fontWeight: FontWeight.bold,
                   color: AppColors.muted,
                 ),
               )
@@ -2400,7 +2397,7 @@ class ColorDetailScreen extends StatelessWidget {
                 left: 14,
                 child: Text(
                   color.name,
-                  style: GoogleFonts.playfairDisplay(
+                  style: GoogleFonts.inter(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
@@ -2496,7 +2493,7 @@ class _SectionTitle extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         title,
-        style: GoogleFonts.syne(
+        style: GoogleFonts.inter(
           fontSize: 10,
           fontWeight: FontWeight.w700,
           letterSpacing: 2,
@@ -2551,7 +2548,7 @@ class _CodeBlock extends StatelessWidget {
           children: [
             Text(
               label,
-              style: GoogleFonts.syne(
+              style: GoogleFonts.inter(
                 fontSize: 9,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 1.5,
@@ -2561,14 +2558,14 @@ class _CodeBlock extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               value,
-              style: GoogleFonts.jetBrainsMono(
+              style: GoogleFonts.inter(
                 fontSize: 13,
                 color: AppColors.white,
               ),
             ),
             Text(
               'Tap to copy',
-              style: GoogleFonts.syne(fontSize: 9, color: AppColors.muted2),
+              style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.muted2),
             ),
           ],
         ),
@@ -2592,7 +2589,7 @@ class _SliderRow extends StatelessWidget {
             width: 28,
             child: Text(
               label,
-              style: GoogleFonts.syne(
+              style: GoogleFonts.inter(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 color: AppColors.muted,
@@ -2624,8 +2621,9 @@ class _SliderRow extends StatelessWidget {
             width: 32,
             child: Text(
               '$value',
-              style: GoogleFonts.jetBrainsMono(
+              style: GoogleFonts.inter(
                 fontSize: 11,
+                fontWeight: FontWeight.bold,
                 color: AppColors.muted,
               ),
               textAlign: TextAlign.right,
@@ -2704,7 +2702,7 @@ class _ComboCard extends StatelessWidget {
             color: AppColors.dark,
             child: Text(
               label,
-              style: GoogleFonts.syne(
+              style: GoogleFonts.inter(
                 fontSize: 9,
                 fontWeight: FontWeight.w700,
                 color: AppColors.muted,
@@ -2764,7 +2762,7 @@ class _ContrastCard extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: GoogleFonts.syne(
+                  style: GoogleFonts.inter(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: AppColors.white,
@@ -2772,10 +2770,11 @@ class _ContrastCard extends StatelessWidget {
                 ),
                 Text(
                   ratio,
-                  style: GoogleFonts.jetBrainsMono(
-                    fontSize: 11,
-                    color: AppColors.muted,
-                  ),
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.muted,
+                          ),
                 ),
               ],
             ),
@@ -2791,7 +2790,7 @@ class _ContrastCard extends StatelessWidget {
             ),
             child: Text(
               pass ? 'PASS' : 'FAIL',
-              style: GoogleFonts.syne(
+              style: GoogleFonts.inter(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
                 color: pass ? const Color(0xFF7fff9a) : const Color(0xFFff6b6b),
@@ -2895,7 +2894,7 @@ class _PaletteTags extends StatelessWidget {
                   ),
                   child: Text(
                     t,
-                    style: GoogleFonts.syne(
+                    style: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       color: t == 'Zimmer' ? AppColors.black : AppColors.muted,
