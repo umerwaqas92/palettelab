@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -538,18 +539,24 @@ class _PhoneShellState extends State<PhoneShell> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).padding.bottom;
+    final isCameraTab = !_showDetail && _currentIndex == 2;
     return Scaffold(
       backgroundColor: AppColors.black,
       body: Stack(
         children: [
           Column(
             children: [
-              SizedBox(height: MediaQuery.of(context).padding.top + 6),
-              _buildStatusBar(),
+              if (!isCameraTab) ...[
+                SizedBox(height: MediaQuery.of(context).padding.top + 6),
+                _buildStatusBar(),
+              ],
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.only(
-                    bottom: _showDetail ? 0 : _tabBarHeight + bottomInset,
+                    bottom:
+                        _showDetail || isCameraTab
+                            ? 0
+                            : _tabBarHeight + bottomInset,
                   ),
                   child:
                       _showDetail && _selectedColor != null
@@ -579,7 +586,7 @@ class _PhoneShellState extends State<PhoneShell> {
               ),
             ],
           ),
-          if (!_showDetail) _buildTabBar(),
+          if (!_showDetail && !isCameraTab) _buildTabBar(),
         ],
       ),
     );
@@ -1411,6 +1418,8 @@ class ExploreScreen extends StatelessWidget {
 class _ColorOfDay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final state = AppStateScope.of(context);
+    final color = colorLibrary.first;
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
@@ -1532,127 +1541,129 @@ class _ColorOfDay extends StatelessWidget {
     );
   }
 
-  void _showExploreSearch(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) {
-        String query = '';
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            final results = colorLibrary
-                .where(
-                  (c) =>
-                      c.name.toLowerCase().contains(query.toLowerCase()) ||
-                      c.hex.toLowerCase().contains(query.toLowerCase()),
-                )
-                .toList();
-            return Container(
-              padding: EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 16,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-              ),
-              decoration: const BoxDecoration(
-                color: AppColors.offBlack,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                border: Border(top: BorderSide(color: AppColors.border)),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 32,
-                      height: 3,
-                      decoration: BoxDecoration(
-                        color: Colors.white24,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
+
+}
+
+void _showExploreSearch(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isScrollControlled: true,
+    builder: (context) {
+      String query = '';
+      return StatefulBuilder(
+        builder: (context, setModalState) {
+          final results = colorLibrary
+              .where(
+                (c) =>
+                    c.name.toLowerCase().contains(query.toLowerCase()) ||
+                    c.hex.toLowerCase().contains(query.toLowerCase()),
+              )
+              .toList();
+          return Container(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 16,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+            ),
+            decoration: const BoxDecoration(
+              color: AppColors.offBlack,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              border: Border(top: BorderSide(color: AppColors.border)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 32,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Explore Search',
-                    style: GoogleFonts.inter(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.white,
-                    ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Explore Search',
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.white,
                   ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    onChanged: (value) =>
-                        setModalState(() => query = value),
-                    style: GoogleFonts.inter(
-                      color: AppColors.white,
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  onChanged: (value) =>
+                      setModalState(() => query = value),
+                  style: GoogleFonts.inter(
+                    color: AppColors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Search palettes or colors',
+                    hintStyle: GoogleFonts.inter(
+                      color: AppColors.muted,
                       fontWeight: FontWeight.w600,
                     ),
-                    decoration: InputDecoration(
-                      hintText: 'Search palettes or colors',
-                      hintStyle: GoogleFonts.inter(
-                        color: AppColors.muted,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      filled: true,
-                      fillColor: AppColors.dark,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
+                    filled: true,
+                    fillColor: AppColors.dark,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    height: 240,
-                    child: ListView.builder(
-                      itemCount: results.length,
-                      itemBuilder: (context, index) {
-                        final color = results[index];
-                        return ListTile(
-                          onTap: () {
-                            Navigator.pop(context);
-                            showToast(context, '${color.name} opened');
-                          },
-                          leading: Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: color.color,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: AppColors.border),
-                            ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 240,
+                  child: ListView.builder(
+                    itemCount: results.length,
+                    itemBuilder: (context, index) {
+                      final color = results[index];
+                      return ListTile(
+                        onTap: () {
+                          Navigator.pop(context);
+                          showToast(context, '${color.name} opened');
+                        },
+                        leading: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: color.color,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.border),
                           ),
-                          title: Text(
-                            color.name,
-                            style: GoogleFonts.inter(
-                              color: AppColors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
+                        ),
+                        title: Text(
+                          color.name,
+                          style: GoogleFonts.inter(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w600,
                           ),
-                          subtitle: Text(
-                            color.hex,
-                            style: GoogleFonts.inter(
-                              color: AppColors.muted,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 11,
-                            ),
+                        ),
+                        subtitle: Text(
+                          color.hex,
+                          style: GoogleFonts.inter(
+                            color: AppColors.muted,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 11,
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    },
                   ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    },
+  );
 }
 
 class _SectionHeader extends StatelessWidget {
@@ -1856,17 +1867,17 @@ class PickerScreen extends StatefulWidget {
 
 class _PickerScreenState extends State<PickerScreen>
     with WidgetsBindingObserver {
-  String _selectedZoom = '1×';
-  final List<String> _zoomLevels = ['0.5×', '1×', '2×', '3×'];
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
   final ImagePicker _imagePicker = ImagePicker();
-  bool _showGrid = true;
   bool _flashEnabled = false;
-  bool _isCapturing = false;
   double _minZoom = 1.0;
   double _maxZoom = 1.0;
   ColorData? _detectedColor;
+  Offset _samplePoint = const Offset(0.5, 0.5);
+  DateTime _lastSample = DateTime.fromMillisecondsSinceEpoch(0);
+  Timer? _snapBackTimer;
+  bool _isProcessingFrame = false;
 
   @override
   void initState() {
@@ -1895,16 +1906,24 @@ class _PickerScreenState extends State<PickerScreen>
   Future<void> _initCamera() async {
     if (appCameras.isEmpty) return;
     final description = appCameras.first;
+    final formatGroup =
+        defaultTargetPlatform == TargetPlatform.iOS
+            ? ImageFormatGroup.bgra8888
+            : ImageFormatGroup.yuv420;
     final controller = CameraController(
       description,
       ResolutionPreset.medium,
+      imageFormatGroup: formatGroup,
       enableAudio: false,
     );
     _controller = controller;
     _initializeControllerFuture = controller.initialize().then((_) async {
       _minZoom = await controller.getMinZoomLevel();
       _maxZoom = await controller.getMaxZoomLevel();
-      await _setZoom(_selectedZoom);
+      await _setZoomLevel(1.0);
+      if (!controller.value.isStreamingImages) {
+        await controller.startImageStream(_onCameraImage);
+      }
       if (!mounted) return;
       setState(() {});
     });
@@ -1913,12 +1932,15 @@ class _PickerScreenState extends State<PickerScreen>
   }
 
   Future<void> _disposeCamera() async {
+    _snapBackTimer?.cancel();
+    if (_controller?.value.isStreamingImages ?? false) {
+      await _controller?.stopImageStream();
+    }
     await _controller?.dispose();
     _controller = null;
   }
 
-  Future<void> _setZoom(String label) async {
-    final value = double.tryParse(label.replaceAll('×', '')) ?? 1.0;
+  Future<void> _setZoomLevel(double value) async {
     final target = value.clamp(_minZoom, _maxZoom);
     if (_controller == null || !_controller!.value.isInitialized) return;
     await _controller!.setZoomLevel(target);
@@ -1937,29 +1959,6 @@ class _PickerScreenState extends State<PickerScreen>
     if (mounted) setState(() {});
   }
 
-  Future<void> _captureAndSample() async {
-    if (_isCapturing) return;
-    if (_controller == null || !_controller!.value.isInitialized) {
-      showToast(context, 'Camera not ready');
-      return;
-    }
-    setState(() => _isCapturing = true);
-    try {
-      await _initializeControllerFuture;
-      final file = await _controller!.takePicture();
-      final bytes = await file.readAsBytes();
-      final color = _sampleColor(bytes);
-      if (color != null && mounted) {
-        setState(() => _detectedColor = color);
-        showToast(context, '${color.hex} captured', copyText: color.hex);
-      }
-    } catch (_) {
-      showToast(context, 'Capture failed');
-    } finally {
-      if (mounted) setState(() => _isCapturing = false);
-    }
-  }
-
   Future<void> _pickFromGallery() async {
     final picked =
         await _imagePicker.pickImage(source: ImageSource.gallery);
@@ -1975,358 +1974,586 @@ class _PickerScreenState extends State<PickerScreen>
   ColorData? _sampleColor(Uint8List bytes) {
     final decoded = img.decodeImage(bytes);
     if (decoded == null) return null;
-    final x = (decoded.width / 2).floor();
-    final y = (decoded.height / 2).floor();
-    final pixel = decoded.getPixel(x, y);
-    int r;
-    int g;
-    int b;
-    if (pixel is int) {
-      r = img.getRed(pixel);
-      g = img.getGreen(pixel);
-      b = img.getBlue(pixel);
-    } else {
-      r = pixel.r.toInt();
-      g = pixel.g.toInt();
-      b = pixel.b.toInt();
+    return _averageDecodedImageColor(
+      decoded,
+      Offset(decoded.width / 2, decoded.height / 2),
+    );
+  }
+
+  Future<void> _onCameraImage(CameraImage image) async {
+    if (_isProcessingFrame) return;
+    final now = DateTime.now();
+    if (now.difference(_lastSample).inMilliseconds < 33) return;
+    _lastSample = now;
+    _isProcessingFrame = true;
+    try {
+      final color = _sampleCameraColor(image);
+      if (color != null && mounted) {
+        setState(() => _detectedColor = color);
+      }
+    } finally {
+      _isProcessingFrame = false;
     }
+  }
+
+  ColorData? _sampleCameraColor(CameraImage image) {
+    if (image.planes.isEmpty) return null;
+    final framePoint = _framePointFromPreview(image);
+    final centerX = framePoint.dx.clamp(0.0, image.width - 1.0).toInt();
+    final centerY = framePoint.dy.clamp(0.0, image.height - 1.0).toInt();
+    const radius = 10;
+    var totalR = 0;
+    var totalG = 0;
+    var totalB = 0;
+    var count = 0;
+
+    for (var y = centerY - radius; y <= centerY + radius; y += 2) {
+      if (y < 0 || y >= image.height) continue;
+      for (var x = centerX - radius; x <= centerX + radius; x += 2) {
+        if (x < 0 || x >= image.width) continue;
+        final rgb =
+            image.planes.length == 1
+                ? _rgbFromBgra(image, x, y)
+                : _rgbFromYuv(image, x, y);
+        totalR += rgb.$1;
+        totalG += rgb.$2;
+        totalB += rgb.$3;
+        count += 1;
+      }
+    }
+
+    if (count == 0) return null;
+    return _colorFromRgb(
+      (totalR / count).round(),
+      (totalG / count).round(),
+      (totalB / count).round(),
+    );
+  }
+
+  int _clampInt(int value) => value.clamp(0, 255).toInt();
+
+  (int, int, int) _rgbFromBgra(CameraImage image, int x, int y) {
+    final plane = image.planes[0];
+    final bytesPerPixel = plane.bytesPerPixel ?? 4;
+    final index = y * plane.bytesPerRow + x * bytesPerPixel;
+    if (index + 2 >= plane.bytes.length) {
+      return (0, 0, 0);
+    }
+    final b = plane.bytes[index];
+    final g = plane.bytes[index + 1];
+    final r = plane.bytes[index + 2];
+    return (r, g, b);
+  }
+
+  Offset _framePointFromPreview(CameraImage image) {
+    final camera = _controller?.description;
+    final lensDirection = camera?.lensDirection ?? CameraLensDirection.back;
+    final sensorOrientation = camera?.sensorOrientation ?? 90;
+    var x = _samplePoint.dx;
+    var y = _samplePoint.dy;
+
+    if (lensDirection == CameraLensDirection.front) {
+      x = 1 - x;
+    }
+
+    switch (sensorOrientation) {
+      case 90:
+        return Offset(y * image.width, (1 - x) * image.height);
+      case 270:
+        return Offset((1 - y) * image.width, x * image.height);
+      case 180:
+        return Offset((1 - x) * image.width, (1 - y) * image.height);
+      case 0:
+      default:
+        return Offset(x * image.width, y * image.height);
+    }
+  }
+
+  (int, int, int) _rgbFromYuv(CameraImage image, int x, int y) {
+    final planeY = image.planes[0];
+    final planeU = image.planes[1];
+    final planeV = image.planes[2];
+    final yIndex = y * planeY.bytesPerRow + x;
+    final uvRow = (y / 2).floor();
+    final uvCol = (x / 2).floor();
+    final uvPixelStride = planeU.bytesPerPixel ?? 1;
+    final uvIndex = uvRow * planeU.bytesPerRow + uvCol * uvPixelStride;
+    final yp = planeY.bytes[yIndex];
+    final up = planeU.bytes[uvIndex];
+    final vp = planeV.bytes[uvIndex];
+    final r = _clampInt((yp + 1.402 * (vp - 128)).round());
+    final g =
+        _clampInt((yp - 0.344136 * (up - 128) - 0.714136 * (vp - 128)).round());
+    final b = _clampInt((yp + 1.772 * (up - 128)).round());
+    return (r, g, b);
+  }
+
+  ColorData? _averageDecodedImageColor(img.Image image, Offset center) {
+    const radius = 14;
+    var totalR = 0;
+    var totalG = 0;
+    var totalB = 0;
+    var count = 0;
+
+    for (var y = center.dy.round() - radius; y <= center.dy.round() + radius; y += 2) {
+      if (y < 0 || y >= image.height) continue;
+      for (var x = center.dx.round() - radius; x <= center.dx.round() + radius; x += 2) {
+        if (x < 0 || x >= image.width) continue;
+        final pixel = image.getPixel(x, y);
+        totalR += pixel.r.toInt();
+        totalG += pixel.g.toInt();
+        totalB += pixel.b.toInt();
+        count += 1;
+      }
+    }
+
+    if (count == 0) return null;
+    return _colorFromRgb(
+      (totalR / count).round(),
+      (totalG / count).round(),
+      (totalB / count).round(),
+    );
+  }
+
+  ColorData _colorFromRgb(int r, int g, int b) {
     final hex =
         '#${r.toRadixString(16).padLeft(2, '0')}${g.toRadixString(16).padLeft(2, '0')}${b.toRadixString(16).padLeft(2, '0')}'
             .toUpperCase();
-    return ColorData(hex: hex, name: 'Captured', r: r, g: g, b: b);
+    final name = _nearestColorName(r, g, b);
+    return ColorData(hex: hex, name: name, r: r, g: g, b: b);
+  }
+
+  String _nearestColorName(int r, int g, int b) {
+    var bestName = 'Captured';
+    var bestDistance = double.infinity;
+    for (final color in colorLibrary) {
+      final dr = r - color.r;
+      final dg = g - color.g;
+      final db = b - color.b;
+      final distance = (dr * dr + dg * dg + db * db).toDouble();
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestName = color.name;
+      }
+    }
+    return bestName;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    final color = _detectedColor ?? colorLibrary.first;
+    final topInset = MediaQuery.of(context).padding.top;
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+    return Stack(
       children: [
-        const SizedBox(height: 14),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Picker',
-                    style: GoogleFonts.inter(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.white,
-                    ),
-                  ),
-                  Text(
-                    'Point & Capture',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 2,
-                      color: AppColors.muted,
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  _IconBtn(
-                    _flashEnabled ? Icons.flash_on : Icons.flash_off,
-                    () => _toggleFlash(),
-                  ),
-                  _IconBtn(
-                    Icons.grid_3x3,
-                    () => setState(() => _showGrid = !_showGrid),
-                  ),
-                  _IconBtn(
-                    Icons.photo_library,
-                    () => _pickFromGallery(),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 6),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children:
-              _zoomLevels
-                  .map(
-                    (z) => GestureDetector(
-                      onTap: () {
-                        setState(() => _selectedZoom = z);
-                        _setZoom(z);
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color:
-                              _selectedZoom == z
-                                  ? AppColors.white
-                                  : AppColors.dark,
-                          border: Border.all(
-                            color:
-                                _selectedZoom == z
-                                    ? AppColors.white
-                                    : AppColors.border,
-                          ),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(
-                          z,
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color:
-                                _selectedZoom == z
-                                    ? AppColors.black
-                                    : AppColors.muted,
-                          ),
-                        ),
-                      ),
-                    ),
-                  )
-                  .toList(),
-        ),
-        Expanded(
-          flex: 2,
-          child: Stack(
-            children: [
-              GestureDetector(
-                onTap: _captureAndSample,
-                child: Container(
-                  color: const Color(0xFF0a0a0a),
-                  child: _controller == null
-                      ? Center(
-                          child: Text(
-                            'Camera unavailable',
-                            style: GoogleFonts.inter(
-                              color: AppColors.muted,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        )
-                      : FutureBuilder<void>(
-                          future: _initializeControllerFuture,
-                          builder: (context, snapshot) {
-                            if (snapshot.hasError) {
-                              return Center(
-                                child: Text(
-                                  'Camera permission denied',
-                                  style: GoogleFonts.inter(
-                                    color: AppColors.muted,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              );
-                            }
-                            if (snapshot.connectionState ==
-                                ConnectionState.done) {
-                              return Center(
-                                child: AspectRatio(
-                                  aspectRatio:
-                                      _controller!.value.aspectRatio,
-                                  child: CameraPreview(_controller!),
-                                ),
-                              );
-                            }
-                            return Center(
-                              child: CircularProgressIndicator(
-                                color: AppColors.white,
-                              ),
-                            );
-                          },
-                        ),
-                ),
-              ),
-              if (_showGrid)
-                CustomPaint(painter: _GridPainter(), size: Size.infinite),
-              Center(
+        Positioned.fill(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final previewRect = _previewRectForSize(constraints.biggest);
+              return GestureDetector(
+                onTapDown:
+                    (details) =>
+                        _handlePreviewTap(details.localPosition, previewRect),
                 child: Stack(
-                  alignment: Alignment.center,
                   children: [
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white30),
+                    Positioned.fill(
+                      child: _buildCameraPreview(previewRect),
+                    ),
+                    Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.18),
+                              Colors.transparent,
+                              Colors.black.withValues(alpha: 0.12),
+                              Colors.black.withValues(alpha: 0.24),
+                            ],
+                            stops: const [0, 0.22, 0.72, 1],
+                          ),
+                        ),
                       ),
                     ),
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
+                    _buildReticle(color, previewRect),
+                    _buildLiveColorBadge(color, previewRect, topInset),
+                    Positioned(
+                      top: topInset + 8,
+                      left: 0,
+                      right: 0,
+                      child: Center(child: _buildTopPill()),
+                    ),
+                    Positioned(
+                      left: 16,
+                      bottom: bottomInset + 86,
+                      child: _buildMiniAction(
+                        icon: Icons.image_outlined,
+                        onTap: _pickFromGallery,
                       ),
+                    ),
+                    Positioned(
+                      right: 16,
+                      bottom: bottomInset + 86,
+                      child: _buildMiniAction(
+                        icon:
+                            _flashEnabled
+                                ? Icons.flash_on_rounded
+                                : Icons.flash_off_rounded,
+                        onTap: _toggleFlash,
+                      ),
+                    ),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: bottomInset + 82,
+                      child: Center(child: _buildShutterButton()),
+                    ),
+                    Positioned(
+                      left: 16,
+                      right: 16,
+                      bottom: bottomInset + 18,
+                      child: _buildModeBar(),
                     ),
                   ],
                 ),
-              ),
-              Positioned(
-                bottom: 16,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Text(
-                    _isCapturing ? 'CAPTURING...' : 'TAP TO CAPTURE',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white38,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: const BoxDecoration(
-            color: AppColors.offBlack,
-            border: Border(top: BorderSide(color: AppColors.border)),
-          ),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: (_detectedColor ?? colorLibrary.first).color,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white12),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _detectedColor?.name ?? 'Graphite Black',
-                          style: GoogleFonts.inter(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.white,
-                          ),
-                        ),
-                        Text(
-                          '${_detectedColor?.hex ?? '#1C1C1C'} · Auto-detected',
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.muted,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                Row(
-                  children: [
-                    _IconBtn(
-                      Icons.edit,
-                      () => showToast(context, 'Edit name'),
-                    ),
-                    _IconBtn(
-                      Icons.colorize,
-                      () => showToast(context, 'Eyedropper ready'),
-                    ),
-                    _IconBtn(Icons.share, () => _showShareSheet(context)),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              SizedBox(
-                height: 36,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: _buildCodePills(),
-                ),
-              ),
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  Expanded(
-                    child: _MainButton(
-                      'Save to Library',
-                      () {
-                        final state = AppStateScope.of(context);
-                        final color = _detectedColor;
-                        if (color != null) {
-                          state.toggleFavorite(color);
-                        }
-                        showToast(context, 'Saved to Library!');
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  _GhostButton(
-                    '+ Palette',
-                    () => showToast(context, 'Added to palette!'),
-                  ),
-                  const SizedBox(width: 8),
-                  _OutlineButton(
-                    Icons.info_outline,
-                    () => showToast(context, 'Color info'),
-                  ),
-                ],
-              ),
-            ],
+              );
+            },
           ),
         ),
       ],
     );
   }
 
-  void _showShareSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _ShareSheet(),
+  void _handlePreviewTap(Offset localPosition, Rect previewRect) {
+    if (!previewRect.contains(localPosition)) return;
+    final previewPoint = Offset(
+      ((localPosition.dx - previewRect.left) / previewRect.width).clamp(0.0, 1.0),
+      ((localPosition.dy - previewRect.top) / previewRect.height).clamp(0.0, 1.0),
+    );
+    setState(() => _samplePoint = previewPoint);
+    _snapBackTimer?.cancel();
+    _snapBackTimer = Timer(const Duration(milliseconds: 800), () {
+      if (!mounted) return;
+      setState(() => _samplePoint = const Offset(0.5, 0.5));
+    });
+  }
+
+  Rect _previewRectForSize(Size viewportSize) {
+    final aspectRatio = _controller?.value.aspectRatio ?? (9 / 16);
+    final viewportAspect = viewportSize.width / viewportSize.height;
+    late double contentWidth;
+    late double contentHeight;
+
+    if (aspectRatio > viewportAspect) {
+      contentHeight = viewportSize.height;
+      contentWidth = contentHeight * aspectRatio;
+    } else {
+      contentWidth = viewportSize.width;
+      contentHeight = contentWidth / aspectRatio;
+    }
+
+    return Rect.fromCenter(
+      center: viewportSize.center(Offset.zero),
+      width: contentWidth,
+      height: contentHeight,
     );
   }
 
-  List<Widget> _buildCodePills() {
-    final color = _detectedColor ?? colorLibrary.first;
-    return [
-      _CodePill('HEX', color.hex),
-      _CodePill('RGB', '${color.r}, ${color.g}, ${color.b}'),
-      _CodePill('HSB', color.hsb),
-      _CodePill('CMYK', color.cmyk),
-    ];
+  Widget _buildCameraPreview(Rect previewRect) {
+    if (_controller == null) {
+      return _buildCameraFallback('Camera unavailable');
+    }
+
+    return FutureBuilder<void>(
+      future: _initializeControllerFuture,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return _buildCameraFallback('Camera permission denied');
+        }
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Center(
+            child: CircularProgressIndicator(color: AppColors.white),
+          );
+        }
+
+        final preview = _controller!;
+        return ClipRect(
+          child: Stack(
+            children: [
+              Positioned.fromRect(
+                rect: previewRect,
+                child: CameraPreview(preview),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
-}
 
-class _OutlineButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-  const _OutlineButton(this.icon, this.onTap);
+  Widget _buildCameraFallback(String message) {
+    return Container(
+      color: const Color(0xFF0A0A0A),
+      alignment: Alignment.center,
+      child: Text(
+        message,
+        style: GoogleFonts.inter(
+          color: AppColors.offWhite,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildTopPill() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.88),
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Litur',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: AppColors.black,
+            ),
+          ),
+          Text(
+            'Loading Ti Bits...',
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: AppColors.muted2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReticle(ColorData color, Rect previewRect) {
+    return Positioned(
+      left: previewRect.left + (_samplePoint.dx * previewRect.width) - 23,
+      top: previewRect.top + (_samplePoint.dy * previewRect.height) - 23,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.20),
+              border: Border.all(color: AppColors.black, width: 2),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x33000000),
+                  blurRadius: 12,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: color.color.withValues(alpha: 0.12),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.75)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLiveColorBadge(ColorData color, Rect previewRect, double topInset) {
+    const badgeWidth = 110.0;
+    const badgeHeight = 34.0;
+    final screenSize = MediaQuery.of(context).size;
+    final anchorX = previewRect.left + (_samplePoint.dx * previewRect.width);
+    final anchorY = previewRect.top + (_samplePoint.dy * previewRect.height);
+    final left = (anchorX + 28).clamp(
+      18.0,
+      screenSize.width - badgeWidth - 18,
+    );
+    final top = (anchorY + 14).clamp(
+      topInset + 70,
+      screenSize.height - 220,
+    );
+    return Positioned(
+      left: left,
+      top: top,
+      child: Container(
+        height: badgeHeight,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.88),
+          borderRadius: BorderRadius.circular(7),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x33000000),
+              blurRadius: 12,
+              offset: Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 14,
+              height: 14,
+              decoration: BoxDecoration(
+                color: color.color,
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              color.hex,
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: AppColors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShutterButton() {
+    return GestureDetector(
+      onTap: _saveCurrentColor,
+      child: Container(
+        width: 74,
+        height: 74,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.white.withValues(alpha: 0.94),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.75), width: 6),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x33000000),
+              blurRadius: 18,
+              offset: Offset(0, 8),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMiniAction({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(12),
+        width: 34,
+        height: 34,
         decoration: BoxDecoration(
-          color: Colors.transparent,
-          border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(12),
+          shape: BoxShape.circle,
+          color: Colors.white.withValues(alpha: 0.22),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
         ),
-        child: Icon(icon, size: 14, color: AppColors.white),
+        child: Icon(icon, size: 18, color: AppColors.white),
       ),
     );
+  }
+
+  Widget _buildModeBar() {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.90),
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildModeChip(
+              icon: Icons.camera_alt_rounded,
+              label: 'From Camera',
+              isSelected: true,
+              onTap: () => _setZoomLevel(1.0),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _buildModeChip(
+              icon: Icons.image_rounded,
+              label: 'From Image',
+              isSelected: false,
+              onTap: _pickFromGallery,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModeChip({
+    required IconData icon,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 42,
+        decoration: BoxDecoration(
+          color:
+              isSelected
+                  ? const Color(0xFFF1F1EC)
+                  : Colors.transparent,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 18, color: AppColors.black),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.black,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _saveCurrentColor() {
+    final color = _detectedColor;
+    if (color == null) {
+      showToast(context, 'Color not ready');
+      return;
+    }
+    final state = AppStateScope.of(context);
+    if (!state.isFavorite(color)) {
+      state.toggleFavorite(color);
+    }
+    showToast(context, '${color.hex} saved', copyText: color.hex);
   }
 }
 
@@ -2396,69 +2623,6 @@ class _AnimatedBlobState extends State<_AnimatedBlob>
               ),
             ),
           ),
-    );
-  }
-}
-
-class _GridPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white.withOpacity(0.08);
-    canvas.drawLine(
-      Offset(size.width * 0.33, 0),
-      Offset(size.width * 0.33, size.height),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(0, size.height * 0.5),
-      Offset(size.width, size.height * 0.5),
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class _CodePill extends StatelessWidget {
-  final String tag, value;
-  const _CodePill(this.tag, this.value);
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => showToast(context, '$tag copied!', copyText: value),
-      child: Container(
-        margin: const EdgeInsets.only(right: 6),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: AppColors.dark,
-          border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              tag,
-              style: GoogleFonts.inter(
-                fontSize: 9,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.5,
-                color: AppColors.muted,
-              ),
-            ),
-            Text(
-              value,
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                color: AppColors.white,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
