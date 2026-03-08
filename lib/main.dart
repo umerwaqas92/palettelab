@@ -1,8 +1,22 @@
+import 'dart:async';
+import 'dart:typed_data';
+
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image/image.dart' as img;
+import 'package:image_picker/image_picker.dart';
 
-void main() {
+List<CameraDescription> appCameras = [];
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    appCameras = await availableCameras();
+  } catch (_) {
+    appCameras = [];
+  }
   runApp(const LiturApp());
 }
 
@@ -11,35 +25,38 @@ class LiturApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Litur',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF050505),
-        colorScheme: const ColorScheme.dark(
-          surface: Color(0xFF050505),
-          primary: Colors.white,
+    return AppStateScope(
+      notifier: AppState(),
+      child: MaterialApp(
+        title: 'Litur',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          useMaterial3: true,
+          brightness: Brightness.dark,
+          scaffoldBackgroundColor: const Color(0xFF050505),
+          colorScheme: const ColorScheme.dark(
+            surface: Color(0xFF050505),
+            primary: Colors.white,
+          ),
+          textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme).copyWith(
+            bodyLarge: GoogleFonts.inter(fontWeight: FontWeight.bold),
+            bodyMedium: GoogleFonts.inter(fontWeight: FontWeight.bold),
+            displayLarge: GoogleFonts.inter(fontWeight: FontWeight.bold),
+            displayMedium: GoogleFonts.inter(fontWeight: FontWeight.bold),
+            displaySmall: GoogleFonts.inter(fontWeight: FontWeight.bold),
+            headlineLarge: GoogleFonts.inter(fontWeight: FontWeight.bold),
+            headlineMedium: GoogleFonts.inter(fontWeight: FontWeight.bold),
+            headlineSmall: GoogleFonts.inter(fontWeight: FontWeight.bold),
+            titleLarge: GoogleFonts.inter(fontWeight: FontWeight.bold),
+            titleMedium: GoogleFonts.inter(fontWeight: FontWeight.bold),
+            titleSmall: GoogleFonts.inter(fontWeight: FontWeight.bold),
+            labelLarge: GoogleFonts.inter(fontWeight: FontWeight.bold),
+            labelMedium: GoogleFonts.inter(fontWeight: FontWeight.bold),
+            labelSmall: GoogleFonts.inter(fontWeight: FontWeight.bold),
+          ),
         ),
-        textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme).copyWith(
-          bodyLarge: GoogleFonts.inter(fontWeight: FontWeight.bold),
-          bodyMedium: GoogleFonts.inter(fontWeight: FontWeight.bold),
-          displayLarge: GoogleFonts.inter(fontWeight: FontWeight.bold),
-          displayMedium: GoogleFonts.inter(fontWeight: FontWeight.bold),
-          displaySmall: GoogleFonts.inter(fontWeight: FontWeight.bold),
-          headlineLarge: GoogleFonts.inter(fontWeight: FontWeight.bold),
-          headlineMedium: GoogleFonts.inter(fontWeight: FontWeight.bold),
-          headlineSmall: GoogleFonts.inter(fontWeight: FontWeight.bold),
-          titleLarge: GoogleFonts.inter(fontWeight: FontWeight.bold),
-          titleMedium: GoogleFonts.inter(fontWeight: FontWeight.bold),
-          titleSmall: GoogleFonts.inter(fontWeight: FontWeight.bold),
-          labelLarge: GoogleFonts.inter(fontWeight: FontWeight.bold),
-          labelMedium: GoogleFonts.inter(fontWeight: FontWeight.bold),
-          labelSmall: GoogleFonts.inter(fontWeight: FontWeight.bold),
-        ),
+        home: const SplashScreen(),
       ),
-      home: const PhoneShell(),
     );
   }
 }
@@ -57,6 +74,221 @@ class AppColors {
   static const Color muted2 = Color(0xFF444);
   static const Color highlight = Color(0x0FFFFFFF);
   static const Color highlight2 = Color(0x1FFFFFFF);
+}
+
+class AppState extends ChangeNotifier {
+  final List<PaletteData> palettes = initialPalettes
+      .map((p) => PaletteData(name: p.name, colors: List.of(p.colors)))
+      .toList();
+  final Set<String> favorites = {};
+  final Map<String, String> customNames = {};
+  final Map<String, bool> settings = {
+    'showNames': true,
+    'autoDetectNames': true,
+    'haptics': false,
+    'icloudSync': true,
+  };
+  DateTime? lastSyncTime;
+  String? _selectedPaletteName;
+
+  bool isFavorite(ColorData color) => favorites.contains(color.hex);
+
+  void toggleFavorite(ColorData color) {
+    if (isFavorite(color)) {
+      favorites.remove(color.hex);
+    } else {
+      favorites.add(color.hex);
+    }
+    notifyListeners();
+  }
+
+  String displayName(ColorData color) =>
+      customNames[color.hex] ?? color.name;
+
+  void renameColor(ColorData color, String name) {
+    if (name.trim().isEmpty) return;
+    customNames[color.hex] = name.trim();
+    notifyListeners();
+  }
+
+  void addPalette(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return;
+    final uniqueName = _uniquePaletteName(trimmed);
+    palettes.insert(
+      0,
+      PaletteData(name: uniqueName, colors: []),
+    );
+    _selectedPaletteName ??= uniqueName;
+    notifyListeners();
+  }
+
+  void deletePalette(PaletteData palette) {
+    palettes.removeWhere((p) => p.name == palette.name);
+    if (_selectedPaletteName == palette.name) {
+      _selectedPaletteName =
+          palettes.isEmpty ? null : palettes.first.name;
+    }
+    notifyListeners();
+  }
+
+  void addColorToPalette(String paletteName, ColorData color) {
+    final index = palettes.indexWhere((p) => p.name == paletteName);
+    if (index == -1) return;
+    final palette = palettes[index];
+    if (palette.colors.any((c) => c.hex == color.hex)) return;
+    final updated = PaletteData(
+      name: palette.name,
+      colors: [...palette.colors, color],
+    );
+    palettes[index] = updated;
+    notifyListeners();
+  }
+
+  String get selectedPaletteName {
+    if (_selectedPaletteName == null || _selectedPaletteName!.isEmpty) {
+      _selectedPaletteName = palettes.isEmpty ? '' : palettes.first.name;
+    }
+    return _selectedPaletteName ?? '';
+  }
+
+  void setSelectedPaletteName(String name) {
+    _selectedPaletteName = name;
+    notifyListeners();
+  }
+
+  void toggleSetting(String key) {
+    if (!settings.containsKey(key)) return;
+    settings[key] = !(settings[key] ?? false);
+    notifyListeners();
+  }
+
+  void syncNow() {
+    lastSyncTime = DateTime.now();
+    notifyListeners();
+  }
+
+  String get syncStatus {
+    final time = lastSyncTime;
+    if (time == null) return 'Not synced';
+    final diff = DateTime.now().difference(time);
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes} min ago';
+    if (diff.inHours < 24) return '${diff.inHours} hr ago';
+    return '${diff.inDays} days ago';
+  }
+
+  String _uniquePaletteName(String base) {
+    var candidate = base;
+    var counter = 2;
+    while (palettes.any((p) => p.name == candidate)) {
+      candidate = '$base $counter';
+      counter += 1;
+    }
+    return candidate;
+  }
+}
+
+class AppStateScope extends InheritedNotifier<AppState> {
+  const AppStateScope({
+    super.key,
+    required AppState notifier,
+    required Widget child,
+  }) : super(notifier: notifier, child: child);
+
+  static AppState of(BuildContext context) {
+    final scope =
+        context.dependOnInheritedWidgetOfExactType<AppStateScope>();
+    return scope!.notifier!;
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fade;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(milliseconds: 900))
+          ..forward();
+    _fade = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+    Timer(const Duration(milliseconds: 1400), () {
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const PhoneShell(),
+          transitionsBuilder: (_, animation, __, child) => FadeTransition(
+            opacity: animation,
+            child: child,
+          ),
+        ),
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.black,
+      body: Center(
+        child: FadeTransition(
+          opacity: _fade,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(22),
+                  boxShadow: const [
+                    BoxShadow(color: Color(0x55000000), blurRadius: 24),
+                  ],
+                ),
+                child: const Icon(Icons.palette, color: Colors.black, size: 34),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'Litur',
+                style: GoogleFonts.inter(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.white,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Color Library',
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 2,
+                  color: AppColors.muted,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class ColorData {
@@ -133,7 +365,7 @@ final List<ColorData> colorLibrary = [
   ColorData(hex: '#E9DEC6', name: 'Desert Sand', r: 233, g: 222, b: 198),
 ];
 
-final List<PaletteData> palettes = [
+final List<PaletteData> initialPalettes = [
   PaletteData(
     name: 'Zimmer',
     colors: [
@@ -272,6 +504,7 @@ class _PhoneShellState extends State<PhoneShell> {
   ColorData? _selectedColor;
   String _selectedFilter = 'All';
   bool _showDetail = false;
+  static const double _tabBarHeight = 86;
   final List<String> _filters = [
     'All',
     'Recent',
@@ -304,6 +537,7 @@ class _PhoneShellState extends State<PhoneShell> {
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).padding.bottom;
     return Scaffold(
       backgroundColor: AppColors.black,
       body: Stack(
@@ -313,32 +547,36 @@ class _PhoneShellState extends State<PhoneShell> {
               SizedBox(height: MediaQuery.of(context).padding.top + 6),
               _buildStatusBar(),
               Expanded(
-                child:
-                    _showDetail && _selectedColor != null
-                        ? ColorDetailScreen(
-                          color: _selectedColor!,
-                          onBack: _closeDetail,
-                        )
-                        : IndexedStack(
-                          index: _currentIndex,
-                          children: [
-                            ColorsScreen(
-                              filters: _filters,
-                              selectedFilter: _selectedFilter,
-                              onFilterChanged:
-                                  (f) =>
-                                      setState(() => _selectedFilter = f),
-                              onColorTap: _openDetail,
-                              onCameraTap: () => _onTabTapped(2),
-                            ),
-                            const ExploreScreen(),
-                            const PickerScreen(),
-                            const PalettesScreen(),
-                            const SettingsScreen(),
-                          ],
-                        ),
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: _showDetail ? 0 : _tabBarHeight + bottomInset,
+                  ),
+                  child:
+                      _showDetail && _selectedColor != null
+                          ? ColorDetailScreen(
+                            color: _selectedColor!,
+                            onBack: _closeDetail,
+                          )
+                          : IndexedStack(
+                            index: _currentIndex,
+                            children: [
+                              ColorsScreen(
+                                filters: _filters,
+                                selectedFilter: _selectedFilter,
+                                onFilterChanged:
+                                    (f) =>
+                                        setState(() => _selectedFilter = f),
+                                onColorTap: _openDetail,
+                                onCameraTap: () => _onTabTapped(2),
+                              ),
+                              const ExploreScreen(),
+                              const PickerScreen(),
+                              const PalettesScreen(),
+                              const SettingsScreen(),
+                            ],
+                          ),
+                ),
               ),
-              SizedBox(height: 100 + MediaQuery.of(context).padding.bottom),
             ],
           ),
           if (!_showDetail) _buildTabBar(),
@@ -423,13 +661,14 @@ class _PhoneShellState extends State<PhoneShell> {
   }
 
   Widget _buildTabBar() {
+    final bottomInset = MediaQuery.of(context).padding.bottom;
     return Positioned(
       bottom: 0,
       left: 0,
       right: 0,
       child: Container(
-        height: 100 + MediaQuery.of(context).padding.bottom,
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 8),
+        height: _tabBarHeight + bottomInset,
+        padding: EdgeInsets.only(bottom: bottomInset + 8),
         decoration: const BoxDecoration(
           color: Colors.black,
           border: Border(top: BorderSide(color: Color(0xFF1a1a1a), width: 1.5)),
@@ -467,6 +706,23 @@ class ColorsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final state = AppStateScope.of(context);
+    final filteredColors = colorLibrary.where((color) {
+      switch (selectedFilter) {
+        case 'Favorites':
+          return state.isFavorite(color);
+        case 'Light':
+          return (color.r + color.g + color.b) / 3 > 160;
+        case 'Dark':
+          return (color.r + color.g + color.b) / 3 < 80;
+        case 'Warm':
+          return color.r > color.b;
+        case 'Cool':
+          return color.b >= color.r;
+        default:
+          return true;
+      }
+    }).toList();
     return Stack(
       children: [
         Column(
@@ -489,7 +745,7 @@ class ColorsScreen extends StatelessWidget {
                     children: [
                       _IconBtn(
                         Icons.search,
-                        () => showToast(context, 'Search colors'),
+                        () => _showSearchSheet(context),
                       ),
                       _IconBtn(Icons.tune, () => _showSortSheet(context)),
                       _IconBtn(
@@ -507,11 +763,11 @@ class ColorsScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
                 children: [
-                  _StatCard('145', ''),
+                  _StatCard('${colorLibrary.length}', ''),
                   const SizedBox(width: 8),
-                  _StatCard('8', ''),
+                  _StatCard('${AppStateScope.of(context).palettes.length}', ''),
                   const SizedBox(width: 8),
-                  _StatCard('12', ''),
+                  _StatCard('${AppStateScope.of(context).favorites.length}', ''),
                 ],
               ),
             ),
@@ -566,9 +822,9 @@ class ColorsScreen extends StatelessWidget {
                   mainAxisSpacing: 12,
                   childAspectRatio: 1,
                 ),
-                itemCount: colorLibrary.length,
+                itemCount: filteredColors.length,
                 itemBuilder: (context, index) {
-                  final color = colorLibrary[index];
+                  final color = filteredColors[index];
                   return _ColorCard(
                     color: color,
                     onTap: () => onColorTap(color),
@@ -595,6 +851,128 @@ class ColorsScreen extends StatelessWidget {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => _ShareSheet(),
+    );
+  }
+
+  void _showSearchSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        String query = '';
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final results = colorLibrary
+                .where(
+                  (c) =>
+                      c.name.toLowerCase().contains(query.toLowerCase()) ||
+                      c.hex.toLowerCase().contains(query.toLowerCase()),
+                )
+                .toList();
+            return Container(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+              ),
+              decoration: const BoxDecoration(
+                color: AppColors.offBlack,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                border: Border(top: BorderSide(color: AppColors.border)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 32,
+                      height: 3,
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Search Colors',
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    onChanged: (value) =>
+                        setModalState(() => query = value),
+                    style: GoogleFonts.inter(
+                      color: AppColors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Search by name or hex',
+                      hintStyle: GoogleFonts.inter(
+                        color: AppColors.muted,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      filled: true,
+                      fillColor: AppColors.dark,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 260,
+                    child: ListView.builder(
+                      itemCount: results.length,
+                      itemBuilder: (context, index) {
+                        final color = results[index];
+                        return ListTile(
+                          onTap: () {
+                            Navigator.pop(context);
+                            onColorTap(color);
+                          },
+                          leading: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: color.color,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                          ),
+                          title: Text(
+                            color.name,
+                            style: GoogleFonts.inter(
+                              color: AppColors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Text(
+                            color.hex,
+                            style: GoogleFonts.inter(
+                              color: AppColors.muted,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 11,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
@@ -696,6 +1074,14 @@ class _ColorCard extends StatelessWidget {
 class _SortSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final state = AppStateScope.of(context);
+    final color = ColorData(
+      hex: '#1C1C1C',
+      name: 'Obsidian Night',
+      r: 28,
+      g: 28,
+      b: 28,
+    );
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.offBlack,
@@ -984,7 +1370,7 @@ class ExploreScreen extends StatelessWidget {
               ),
               _IconBtn(
                 Icons.search,
-                () => showToast(context, 'Search trending'),
+                () => _showExploreSearch(context),
               ),
             ],
           ),
@@ -996,11 +1382,19 @@ class ExploreScreen extends StatelessWidget {
             children: [
               _ColorOfDay(),
               const SizedBox(height: 20),
-              _SectionHeader('Trending Palettes', 'See All →'),
+              _SectionHeader(
+                'Trending Palettes',
+                'See All →',
+                onTap: () => showToast(context, 'Trending palettes'),
+              ),
               const SizedBox(height: 10),
               _TrendingRow(),
               const SizedBox(height: 20),
-              _SectionHeader('Recent Colors', 'See All →'),
+              _SectionHeader(
+                'Recent Colors',
+                'See All →',
+                onTap: () => showToast(context, 'Recent colors'),
+              ),
               const SizedBox(height: 10),
               _RecentColors(),
               const SizedBox(height: 12),
@@ -1105,8 +1499,18 @@ class _ColorOfDay extends StatelessWidget {
                 Row(
                   children: [
                     _IconBtn(
-                      Icons.favorite_border,
-                      () => showToast(context, 'Saved!'),
+                      state.isFavorite(color)
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      () {
+                        state.toggleFavorite(color);
+                        showToast(
+                          context,
+                          state.isFavorite(color)
+                              ? 'Saved!'
+                              : 'Removed',
+                        );
+                      },
                     ),
                     const SizedBox(width: 6),
                     _IconBtn(Icons.share, () => _showShareSheet(context)),
@@ -1127,11 +1531,134 @@ class _ColorOfDay extends StatelessWidget {
       builder: (context) => _ShareSheet(),
     );
   }
+
+  void _showExploreSearch(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        String query = '';
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final results = colorLibrary
+                .where(
+                  (c) =>
+                      c.name.toLowerCase().contains(query.toLowerCase()) ||
+                      c.hex.toLowerCase().contains(query.toLowerCase()),
+                )
+                .toList();
+            return Container(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+              ),
+              decoration: const BoxDecoration(
+                color: AppColors.offBlack,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                border: Border(top: BorderSide(color: AppColors.border)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 32,
+                      height: 3,
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Explore Search',
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    onChanged: (value) =>
+                        setModalState(() => query = value),
+                    style: GoogleFonts.inter(
+                      color: AppColors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Search palettes or colors',
+                      hintStyle: GoogleFonts.inter(
+                        color: AppColors.muted,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      filled: true,
+                      fillColor: AppColors.dark,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 240,
+                    child: ListView.builder(
+                      itemCount: results.length,
+                      itemBuilder: (context, index) {
+                        final color = results[index];
+                        return ListTile(
+                          onTap: () {
+                            Navigator.pop(context);
+                            showToast(context, '${color.name} opened');
+                          },
+                          leading: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: color.color,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                          ),
+                          title: Text(
+                            color.name,
+                            style: GoogleFonts.inter(
+                              color: AppColors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Text(
+                            color.hex,
+                            style: GoogleFonts.inter(
+                              color: AppColors.muted,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 11,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 }
 
 class _SectionHeader extends StatelessWidget {
   final String title, action;
-  const _SectionHeader(this.title, this.action);
+  final VoidCallback? onTap;
+  const _SectionHeader(this.title, this.action, {this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -1146,12 +1673,15 @@ class _SectionHeader extends StatelessWidget {
             color: AppColors.white,
           ),
         ),
-        Text(
-          action,
-          style: GoogleFonts.inter(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: AppColors.muted,
+        GestureDetector(
+          onTap: onTap,
+          child: Text(
+            action,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppColors.muted,
+            ),
           ),
         ),
       ],
@@ -1172,22 +1702,22 @@ class _TrendingRow extends StatelessWidget {
             const Color(0xFF333),
             const Color(0xFF666),
             const Color(0xFFccc),
-          ]),
+          ], onTap: () => showToast(context, 'Monochrome opened')),
           _TrendCard('Sunset Fade', '1.8k', [
             const Color(0xFFC0392B),
             const Color(0xFFE67E22),
             const Color(0xFFFBCE50),
-          ]),
+          ], onTap: () => showToast(context, 'Sunset Fade opened')),
           _TrendCard('Deep Ocean', '1.4k', [
             const Color(0xFF0d2240),
             const Color(0xFF5386C0),
             const Color(0xFFc2d8f0),
-          ]),
+          ], onTap: () => showToast(context, 'Deep Ocean opened')),
           _TrendCard('Botanical', '980', [
             const Color(0xFF505518),
             const Color(0xFF2ECC71),
             const Color(0xFFE1FEE0),
-          ]),
+          ], onTap: () => showToast(context, 'Botanical opened')),
         ],
       ),
     );
@@ -1197,49 +1727,53 @@ class _TrendingRow extends StatelessWidget {
 class _TrendCard extends StatelessWidget {
   final String name, count;
   final List<Color> colors;
-  const _TrendCard(this.name, this.count, this.colors);
+  final VoidCallback? onTap;
+  const _TrendCard(this.name, this.count, this.colors, {this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 120,
-      margin: const EdgeInsets.only(right: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        children: [
-          Expanded(
-            child: Row(
-              children:
-                  colors
-                      .map((c) => Expanded(child: Container(color: c)))
-                      .toList(),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 120,
+        margin: const EdgeInsets.only(right: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: Row(
+                children:
+                    colors
+                        .map((c) => Expanded(child: Container(color: c)))
+                        .toList(),
+              ),
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: const BoxDecoration(color: AppColors.dark),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.white,
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: const BoxDecoration(color: AppColors.dark),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.white,
+                    ),
                   ),
-                ),
-                Text(
-                  '$count saves',
-                  style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.muted),
-                ),
-              ],
+                  Text(
+                    '$count saves',
+                    style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.muted),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1273,38 +1807,41 @@ class _RecentColors extends StatelessWidget {
 class _WatchBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.dark,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          const Text('⌚', style: TextStyle(fontSize: 24)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Apple Watch App',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.white,
+    return GestureDetector(
+      onTap: () => showToast(context, 'Watch app details'),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.dark,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            const Text('⌚', style: TextStyle(fontSize: 24)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Apple Watch App',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.white,
+                    ),
                   ),
-                ),
-                Text(
-                  'Access your colors on your wrist',
-                  style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.muted),
-                ),
-              ],
+                  Text(
+                    'Access your colors on your wrist',
+                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.muted),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Icon(Icons.chevron_right, color: AppColors.muted),
-        ],
+            Icon(Icons.chevron_right, color: AppColors.muted),
+          ],
+        ),
       ),
     );
   }
@@ -1317,9 +1854,147 @@ class PickerScreen extends StatefulWidget {
   State<PickerScreen> createState() => _PickerScreenState();
 }
 
-class _PickerScreenState extends State<PickerScreen> {
-  String _selectedZoom = '0.5×';
+class _PickerScreenState extends State<PickerScreen>
+    with WidgetsBindingObserver {
+  String _selectedZoom = '1×';
   final List<String> _zoomLevels = ['0.5×', '1×', '2×', '3×'];
+  CameraController? _controller;
+  Future<void>? _initializeControllerFuture;
+  final ImagePicker _imagePicker = ImagePicker();
+  bool _showGrid = true;
+  bool _flashEnabled = false;
+  bool _isCapturing = false;
+  double _minZoom = 1.0;
+  double _maxZoom = 1.0;
+  ColorData? _detectedColor;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _initCamera();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _disposeCamera();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_controller == null || !_controller!.value.isInitialized) return;
+    if (state == AppLifecycleState.inactive) {
+      _disposeCamera();
+    } else if (state == AppLifecycleState.resumed) {
+      _initCamera();
+    }
+  }
+
+  Future<void> _initCamera() async {
+    if (appCameras.isEmpty) return;
+    final description = appCameras.first;
+    final controller = CameraController(
+      description,
+      ResolutionPreset.medium,
+      enableAudio: false,
+    );
+    _controller = controller;
+    _initializeControllerFuture = controller.initialize().then((_) async {
+      _minZoom = await controller.getMinZoomLevel();
+      _maxZoom = await controller.getMaxZoomLevel();
+      await _setZoom(_selectedZoom);
+      if (!mounted) return;
+      setState(() {});
+    });
+    if (!mounted) return;
+    setState(() {});
+  }
+
+  Future<void> _disposeCamera() async {
+    await _controller?.dispose();
+    _controller = null;
+  }
+
+  Future<void> _setZoom(String label) async {
+    final value = double.tryParse(label.replaceAll('×', '')) ?? 1.0;
+    final target = value.clamp(_minZoom, _maxZoom);
+    if (_controller == null || !_controller!.value.isInitialized) return;
+    await _controller!.setZoomLevel(target);
+  }
+
+  Future<void> _toggleFlash() async {
+    if (_controller == null || !_controller!.value.isInitialized) return;
+    _flashEnabled = !_flashEnabled;
+    try {
+      await _controller!.setFlashMode(
+        _flashEnabled ? FlashMode.torch : FlashMode.off,
+      );
+    } catch (_) {
+      _flashEnabled = false;
+    }
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _captureAndSample() async {
+    if (_isCapturing) return;
+    if (_controller == null || !_controller!.value.isInitialized) {
+      showToast(context, 'Camera not ready');
+      return;
+    }
+    setState(() => _isCapturing = true);
+    try {
+      await _initializeControllerFuture;
+      final file = await _controller!.takePicture();
+      final bytes = await file.readAsBytes();
+      final color = _sampleColor(bytes);
+      if (color != null && mounted) {
+        setState(() => _detectedColor = color);
+        showToast(context, '${color.hex} captured', copyText: color.hex);
+      }
+    } catch (_) {
+      showToast(context, 'Capture failed');
+    } finally {
+      if (mounted) setState(() => _isCapturing = false);
+    }
+  }
+
+  Future<void> _pickFromGallery() async {
+    final picked =
+        await _imagePicker.pickImage(source: ImageSource.gallery);
+    if (picked == null) return;
+    final bytes = await picked.readAsBytes();
+    final color = _sampleColor(bytes);
+    if (color != null && mounted) {
+      setState(() => _detectedColor = color);
+      showToast(context, '${color.hex} sampled', copyText: color.hex);
+    }
+  }
+
+  ColorData? _sampleColor(Uint8List bytes) {
+    final decoded = img.decodeImage(bytes);
+    if (decoded == null) return null;
+    final x = (decoded.width / 2).floor();
+    final y = (decoded.height / 2).floor();
+    final pixel = decoded.getPixel(x, y);
+    int r;
+    int g;
+    int b;
+    if (pixel is int) {
+      r = img.getRed(pixel);
+      g = img.getGreen(pixel);
+      b = img.getBlue(pixel);
+    } else {
+      r = pixel.r.toInt();
+      g = pixel.g.toInt();
+      b = pixel.b.toInt();
+    }
+    final hex =
+        '#${r.toRadixString(16).padLeft(2, '0')}${g.toRadixString(16).padLeft(2, '0')}${b.toRadixString(16).padLeft(2, '0')}'
+            .toUpperCase();
+    return ColorData(hex: hex, name: 'Captured', r: r, g: g, b: b);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1356,16 +2031,16 @@ class _PickerScreenState extends State<PickerScreen> {
               Row(
                 children: [
                   _IconBtn(
-                    Icons.flash_on,
-                    () => showToast(context, 'Flash toggled'),
+                    _flashEnabled ? Icons.flash_on : Icons.flash_off,
+                    () => _toggleFlash(),
                   ),
                   _IconBtn(
                     Icons.grid_3x3,
-                    () => showToast(context, 'Grid toggled'),
+                    () => setState(() => _showGrid = !_showGrid),
                   ),
                   _IconBtn(
                     Icons.photo_library,
-                    () => showToast(context, 'Photo library opened'),
+                    () => _pickFromGallery(),
                   ),
                 ],
               ),
@@ -1379,7 +2054,10 @@ class _PickerScreenState extends State<PickerScreen> {
               _zoomLevels
                   .map(
                     (z) => GestureDetector(
-                      onTap: () => setState(() => _selectedZoom = z),
+                      onTap: () {
+                        setState(() => _selectedZoom = z);
+                        _setZoom(z);
+                      },
                       child: Container(
                         margin: const EdgeInsets.symmetric(horizontal: 4),
                         padding: const EdgeInsets.symmetric(
@@ -1419,23 +2097,55 @@ class _PickerScreenState extends State<PickerScreen> {
           flex: 2,
           child: Stack(
             children: [
-              Container(color: const Color(0xFF0a0a0a)),
-              Positioned(
-                top: 30,
-                left: 30,
-                child: _AnimatedBlob(180, 180, const Color(0xFF2e2e2e), 0),
+              GestureDetector(
+                onTap: _captureAndSample,
+                child: Container(
+                  color: const Color(0xFF0a0a0a),
+                  child: _controller == null
+                      ? Center(
+                          child: Text(
+                            'Camera unavailable',
+                            style: GoogleFonts.inter(
+                              color: AppColors.muted,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        )
+                      : FutureBuilder<void>(
+                          future: _initializeControllerFuture,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasError) {
+                              return Center(
+                                child: Text(
+                                  'Camera permission denied',
+                                  style: GoogleFonts.inter(
+                                    color: AppColors.muted,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              );
+                            }
+                            if (snapshot.connectionState ==
+                                ConnectionState.done) {
+                              return Center(
+                                child: AspectRatio(
+                                  aspectRatio:
+                                      _controller!.value.aspectRatio,
+                                  child: CameraPreview(_controller!),
+                                ),
+                              );
+                            }
+                            return Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.white,
+                              ),
+                            );
+                          },
+                        ),
+                ),
               ),
-              Positioned(
-                bottom: 100,
-                right: 20,
-                child: _AnimatedBlob(140, 140, const Color(0xFF1a1a1a), 1),
-              ),
-              Positioned(
-                top: 200,
-                left: 150,
-                child: _AnimatedBlob(100, 100, const Color(0xFF3a3a3a), 2),
-              ),
-              CustomPaint(painter: _GridPainter(), size: Size.infinite),
+              if (_showGrid)
+                CustomPaint(painter: _GridPainter(), size: Size.infinite),
               Center(
                 child: Stack(
                   alignment: Alignment.center,
@@ -1461,13 +2171,17 @@ class _PickerScreenState extends State<PickerScreen> {
               ),
               Positioned(
                 bottom: 16,
-                child: Text(
-                  'TAP TO LOCK',
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white38,
-                    letterSpacing: 2,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Text(
+                    _isCapturing ? 'CAPTURING...' : 'TAP TO CAPTURE',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white38,
+                      letterSpacing: 2,
+                    ),
                   ),
                 ),
               ),
@@ -1488,7 +2202,7 @@ class _PickerScreenState extends State<PickerScreen> {
                     width: 56,
                     height: 56,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1c1c1c),
+                      color: (_detectedColor ?? colorLibrary.first).color,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.white12),
                     ),
@@ -1499,7 +2213,7 @@ class _PickerScreenState extends State<PickerScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Graphite Black',
+                          _detectedColor?.name ?? 'Graphite Black',
                           style: GoogleFonts.inter(
                             fontSize: 17,
                             fontWeight: FontWeight.w700,
@@ -1507,7 +2221,7 @@ class _PickerScreenState extends State<PickerScreen> {
                           ),
                         ),
                         Text(
-                          '#1C1C1C · Auto-detected',
+                          '${_detectedColor?.hex ?? '#1C1C1C'} · Auto-detected',
                           style: GoogleFonts.inter(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
@@ -1517,17 +2231,17 @@ class _PickerScreenState extends State<PickerScreen> {
                       ],
                     ),
                   ),
-                  Row(
-                    children: [
-                      _IconBtn(
-                        Icons.edit,
-                        () => showToast(context, 'Edit name'),
-                      ),
-                      _IconBtn(
-                        Icons.colorize,
-                        () => showToast(context, 'Eyedropper ready'),
-                      ),
-                      _IconBtn(Icons.share, () => _showShareSheet(context)),
+                Row(
+                  children: [
+                    _IconBtn(
+                      Icons.edit,
+                      () => showToast(context, 'Edit name'),
+                    ),
+                    _IconBtn(
+                      Icons.colorize,
+                      () => showToast(context, 'Eyedropper ready'),
+                    ),
+                    _IconBtn(Icons.share, () => _showShareSheet(context)),
                     ],
                   ),
                 ],
@@ -1537,12 +2251,7 @@ class _PickerScreenState extends State<PickerScreen> {
                 height: 36,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
-                  children: const [
-                    _CodePill('HEX', '#1C1C1C'),
-                    _CodePill('RGB', '28, 28, 28'),
-                    _CodePill('HSB', '0°, 0%, 11%'),
-                    _CodePill('CMYK', '0, 0, 0, 89'),
-                  ],
+                  children: _buildCodePills(),
                 ),
               ),
               const SizedBox(height: 14),
@@ -1551,7 +2260,14 @@ class _PickerScreenState extends State<PickerScreen> {
                   Expanded(
                     child: _MainButton(
                       'Save to Library',
-                      () => showToast(context, 'Saved to Library!'),
+                      () {
+                        final state = AppStateScope.of(context);
+                        final color = _detectedColor;
+                        if (color != null) {
+                          state.toggleFavorite(color);
+                        }
+                        showToast(context, 'Saved to Library!');
+                      },
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -1560,7 +2276,10 @@ class _PickerScreenState extends State<PickerScreen> {
                     () => showToast(context, 'Added to palette!'),
                   ),
                   const SizedBox(width: 8),
-                  _OutlineButton(Icons.info_outline, () {}),
+                  _OutlineButton(
+                    Icons.info_outline,
+                    () => showToast(context, 'Color info'),
+                  ),
                 ],
               ),
             ],
@@ -1576,6 +2295,16 @@ class _PickerScreenState extends State<PickerScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) => _ShareSheet(),
     );
+  }
+
+  List<Widget> _buildCodePills() {
+    final color = _detectedColor ?? colorLibrary.first;
+    return [
+      _CodePill('HEX', color.hex),
+      _CodePill('RGB', '${color.r}, ${color.g}, ${color.b}'),
+      _CodePill('HSB', color.hsb),
+      _CodePill('CMYK', color.cmyk),
+    ];
   }
 }
 
@@ -1734,11 +2463,20 @@ class _CodePill extends StatelessWidget {
   }
 }
 
-class PalettesScreen extends StatelessWidget {
+class PalettesScreen extends StatefulWidget {
   const PalettesScreen({super.key});
 
   @override
+  State<PalettesScreen> createState() => _PalettesScreenState();
+}
+
+class _PalettesScreenState extends State<PalettesScreen> {
+  String _selectedFilter = 'All';
+
+  @override
   Widget build(BuildContext context) {
+    final state = AppStateScope.of(context);
+    final palettes = state.palettes;
     return Column(
       children: [
         const SizedBox(height: 14),
@@ -1771,7 +2509,7 @@ class PalettesScreen extends StatelessWidget {
               ),
               Row(
                 children: [
-                  _IconBtn(Icons.search, () {}),
+                  _IconBtn(Icons.search, () => showToast(context, 'Search palettes')),
                   _IconBtn(
                     Icons.download,
                     () => showToast(context, 'Import palette'),
@@ -1791,28 +2529,37 @@ class PalettesScreen extends StatelessWidget {
             children:
                 ['All', 'Custom', 'Generated', 'Shared']
                     .map(
-                      (f) => Container(
-                        margin: const EdgeInsets.only(right: 6),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color:
-                              f == 'All' ? AppColors.white : Colors.transparent,
-                          border: Border.all(
-                            color:
-                                f == 'All' ? AppColors.white : AppColors.border,
+                      (f) => GestureDetector(
+                        onTap: () => setState(() => _selectedFilter = f),
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
                           ),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(
-                          f,
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                          decoration: BoxDecoration(
                             color:
-                                f == 'All' ? AppColors.black : AppColors.muted,
+                                f == _selectedFilter
+                                    ? AppColors.white
+                                    : Colors.transparent,
+                            border: Border.all(
+                              color:
+                                  f == _selectedFilter
+                                      ? AppColors.white
+                                      : AppColors.border,
+                            ),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            f,
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color:
+                                  f == _selectedFilter
+                                      ? AppColors.black
+                                      : AppColors.muted,
+                            ),
                           ),
                         ),
                       ),
@@ -1822,7 +2569,7 @@ class PalettesScreen extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         GestureDetector(
-          onTap: () => showToast(context, 'New palette created!'),
+          onTap: () => _showNewPaletteDialog(context, state),
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 20),
             padding: const EdgeInsets.all(13),
@@ -1857,7 +2604,18 @@ class PalettesScreen extends StatelessWidget {
             itemCount: palettes.length,
             itemBuilder: (context, index) {
               final palette = palettes[index];
-              return _PaletteCard(palette: palette);
+              return _PaletteCard(
+                palette: palette,
+                onCopy: () => showToast(
+                  context,
+                  '${palette.name} copied!',
+                ),
+                onShare: () => _showShareSheet(context),
+                onDelete: () {
+                  state.deletePalette(palette);
+                  showToast(context, '${palette.name} deleted');
+                },
+              );
             },
           ),
         ),
@@ -1872,11 +2630,73 @@ class PalettesScreen extends StatelessWidget {
       builder: (context) => _ShareSheet(),
     );
   }
+
+  void _showNewPaletteDialog(BuildContext context, AppState state) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.offBlack,
+        title: Text(
+          'New Palette',
+          style: GoogleFonts.inter(
+            color: AppColors.white,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: TextField(
+          controller: controller,
+          style: GoogleFonts.inter(
+            color: AppColors.white,
+            fontWeight: FontWeight.w600,
+          ),
+          decoration: InputDecoration(
+            hintText: 'Palette name',
+            hintStyle: GoogleFonts.inter(color: AppColors.muted),
+            filled: true,
+            fillColor: AppColors.dark,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.inter(color: AppColors.muted),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              state.addPalette(controller.text);
+              Navigator.pop(context);
+              showToast(context, 'Palette created');
+            },
+            child: Text(
+              'Create',
+              style: GoogleFonts.inter(color: AppColors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _PaletteCard extends StatelessWidget {
   final PaletteData palette;
-  const _PaletteCard({required this.palette});
+  final VoidCallback onCopy;
+  final VoidCallback onShare;
+  final VoidCallback onDelete;
+  const _PaletteCard({
+    required this.palette,
+    required this.onCopy,
+    required this.onShare,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1893,9 +2713,30 @@ class _PaletteCard extends StatelessWidget {
             height: 52,
             child: Row(
               children:
-                  palette.colors
-                      .map((c) => Expanded(child: Container(color: c.color)))
-                      .toList(),
+                  palette.colors.isEmpty
+                      ? [
+                        Expanded(
+                          child: Container(
+                            color: AppColors.mid,
+                            child: Center(
+                              child: Text(
+                                'Empty',
+                                style: GoogleFonts.inter(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.muted,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ]
+                      : palette.colors
+                          .map(
+                            (c) =>
+                                Expanded(child: Container(color: c.color)),
+                          )
+                          .toList(),
             ),
           ),
           Container(
@@ -1920,30 +2761,16 @@ class _PaletteCard extends StatelessWidget {
                           ),
                 ),
                 const Spacer(),
-                _IconBtn(
-                  Icons.copy,
-                  () => showToast(context, '${palette.name} copied!'),
-                ),
+                _IconBtn(Icons.copy, onCopy),
                 const SizedBox(width: 4),
-                _IconBtn(Icons.share, () => _showShareSheet(context)),
+                _IconBtn(Icons.share, onShare),
                 const SizedBox(width: 4),
-                _IconBtn(
-                  Icons.delete_outline,
-                  () => showToast(context, '${palette.name} deleted'),
-                ),
+                _IconBtn(Icons.delete_outline, onDelete),
               ],
             ),
           ),
         ],
       ),
-    );
-  }
-
-  void _showShareSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _ShareSheet(),
     );
   }
 }
@@ -1953,6 +2780,7 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final state = AppStateScope.of(context);
     return Column(
       children: [
         const SizedBox(height: 14),
@@ -1996,6 +2824,7 @@ class SettingsScreen extends StatelessWidget {
                   Icons.palette_outlined,
                   'Theme',
                   'Dark',
+                  onTap: () => showToast(context, 'Theme settings'),
                   trailing: Icon(
                     Icons.chevron_right,
                     color: AppColors.muted2,
@@ -2006,19 +2835,28 @@ class SettingsScreen extends StatelessWidget {
                   Icons.grid_view,
                   'Grid Layout',
                   '3 col',
+                  onTap: () => showToast(context, 'Grid settings'),
                   trailing: Icon(
                     Icons.chevron_right,
                     color: AppColors.muted2,
                     size: 14,
                   ),
                 ),
-                _SettingsRow(Icons.visibility, 'Show Names', '', toggle: true),
+                _SettingsRow(
+                  Icons.visibility,
+                  'Show Names',
+                  '',
+                  toggle: true,
+                  toggleValue: state.settings['showNames'] ?? true,
+                  onToggle: (value) => state.toggleSetting('showNames'),
+                ),
               ]),
               _SettingsSection('Color Codes', [
                 _SettingsRow(
                   Icons.text_fields,
                   'Copy Format',
                   'HEX',
+                  onTap: () => showToast(context, 'Copy format set to HEX'),
                   trailing: Icon(
                     Icons.chevron_right,
                     color: AppColors.muted2,
@@ -2030,20 +2868,35 @@ class SettingsScreen extends StatelessWidget {
                   'Auto-detect Names',
                   '',
                   toggle: true,
+                  toggleValue: state.settings['autoDetectNames'] ?? true,
+                  onToggle: (value) => state.toggleSetting('autoDetectNames'),
                 ),
                 _SettingsRow(
                   Icons.vibration,
                   'Haptic Feedback',
                   '',
-                  toggle: false,
+                  toggle: true,
+                  toggleValue: state.settings['haptics'] ?? false,
+                  onToggle: (value) => state.toggleSetting('haptics'),
                 ),
               ]),
               _SettingsSection('Sync & Backup', [
-                _SettingsRow(Icons.cloud, 'iCloud Sync', '', toggle: true),
+                _SettingsRow(
+                  Icons.cloud,
+                  'iCloud Sync',
+                  '',
+                  toggle: true,
+                  toggleValue: state.settings['icloudSync'] ?? true,
+                  onToggle: (value) => state.toggleSetting('icloudSync'),
+                ),
                 _SettingsRow(
                   Icons.sync,
                   'Sync Now',
-                  '2 min ago',
+                  state.syncStatus,
+                  onTap: () {
+                    state.syncNow();
+                    showToast(context, 'Synced');
+                  },
                   trailing: Icon(
                     Icons.chevron_right,
                     color: AppColors.muted2,
@@ -2054,6 +2907,7 @@ class SettingsScreen extends StatelessWidget {
                   Icons.download,
                   'Export Backup',
                   '',
+                  onTap: () => showToast(context, 'Backup exported'),
                   trailing: Icon(
                     Icons.chevron_right,
                     color: AppColors.muted2,
@@ -2064,6 +2918,7 @@ class SettingsScreen extends StatelessWidget {
                   Icons.upload,
                   'Import Colors',
                   '',
+                  onTap: () => showToast(context, 'Import started'),
                   trailing: Icon(
                     Icons.chevron_right,
                     color: AppColors.muted2,
@@ -2076,6 +2931,7 @@ class SettingsScreen extends StatelessWidget {
                   Icons.language,
                   'Developer Website',
                   '',
+                  onTap: () => showToast(context, 'Opening website'),
                   trailing: Icon(
                     Icons.chevron_right,
                     color: AppColors.muted2,
@@ -2086,6 +2942,7 @@ class SettingsScreen extends StatelessWidget {
                   Icons.security,
                   'Privacy Policy',
                   '',
+                  onTap: () => showToast(context, 'Opening privacy policy'),
                   trailing: Icon(
                     Icons.chevron_right,
                     color: AppColors.muted2,
@@ -2096,6 +2953,7 @@ class SettingsScreen extends StatelessWidget {
                   Icons.mail_outline,
                   'Send Feedback',
                   '',
+                  onTap: () => showToast(context, 'Feedback form opened'),
                   trailing: Icon(
                     Icons.chevron_right,
                     color: AppColors.muted2,
@@ -2106,6 +2964,7 @@ class SettingsScreen extends StatelessWidget {
                   Icons.star,
                   'Rate Litur',
                   '',
+                  onTap: () => showToast(context, 'Thanks for the rating!'),
                   trailing: Icon(
                     Icons.chevron_right,
                     color: AppColors.muted2,
@@ -2117,6 +2976,7 @@ class SettingsScreen extends StatelessWidget {
                   'Clear All Colors',
                   '',
                   danger: true,
+                  onTap: () => showToast(context, 'All colors cleared'),
                   trailing: Icon(
                     Icons.chevron_right,
                     color: Colors.redAccent,
@@ -2136,6 +2996,7 @@ class SettingsScreen extends StatelessWidget {
 class _ProfileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final state = AppStateScope.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.only(bottom: 16),
@@ -2179,7 +3040,7 @@ class _ProfileCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '145 colors · 8 palettes',
+                  '${colorLibrary.length} colors · ${state.palettes.length} palettes',
                   style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.muted),
                 ),
               ],
@@ -2240,13 +3101,16 @@ class _SettingsSection extends StatelessWidget {
   }
 }
 
-class _SettingsRow extends StatefulWidget {
+class _SettingsRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String? value;
   final Widget? trailing;
   final bool toggle;
   final bool danger;
+  final bool? toggleValue;
+  final ValueChanged<bool>? onToggle;
+  final VoidCallback? onTap;
   const _SettingsRow(
     this.icon,
     this.label,
@@ -2254,19 +3118,21 @@ class _SettingsRow extends StatefulWidget {
     this.trailing,
     this.toggle = false,
     this.danger = false,
+    this.toggleValue,
+    this.onToggle,
+    this.onTap,
   });
 
   @override
-  State<_SettingsRow> createState() => _SettingsRowState();
-}
-
-class _SettingsRowState extends State<_SettingsRow> {
-  bool _toggle = true;
-
-  @override
   Widget build(BuildContext context) {
+    final enabled = toggleValue ?? false;
     return GestureDetector(
-      onTap: () => showToast(context, '${widget.label} tapped'),
+      onTap: onTap ??
+          () {
+            if (!toggle) {
+              showToast(context, '$label tapped');
+            }
+          },
       child: Container(
         padding: const EdgeInsets.all(13),
         decoration: const BoxDecoration(
@@ -2282,50 +3148,54 @@ class _SettingsRowState extends State<_SettingsRow> {
                 borderRadius: BorderRadius.circular(9),
               ),
               child: Icon(
-                widget.icon,
+                icon,
                 size: 15,
-                color: widget.danger ? Colors.redAccent : AppColors.white,
+                color: danger ? Colors.redAccent : AppColors.white,
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                widget.label,
+                label,
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: widget.danger ? Colors.redAccent : AppColors.white,
+                  color: danger ? Colors.redAccent : AppColors.white,
                 ),
               ),
             ),
-            if (widget.toggle)
+            if (toggle)
               GestureDetector(
-                onTap: () => setState(() => _toggle = !_toggle),
+                onTap: () => onToggle?.call(!enabled),
                 child: Container(
                   width: 42,
                   height: 24,
                   decoration: BoxDecoration(
-                    color: _toggle ? AppColors.offWhite : const Color(0xFF333),
+                    color:
+                        enabled ? AppColors.offWhite : const Color(0xFF333),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Align(
                     alignment:
-                        _toggle ? Alignment.centerRight : Alignment.centerLeft,
+                        enabled
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
                     child: Container(
                       width: 18,
                       height: 18,
                       margin: const EdgeInsets.all(3),
                       decoration: BoxDecoration(
-                        color: _toggle ? Colors.black : const Color(0xFF888),
+                        color:
+                            enabled ? Colors.black : const Color(0xFF888),
                         shape: BoxShape.circle,
                       ),
                     ),
                   ),
                 ),
               )
-            else if (widget.value != null && widget.value!.isNotEmpty)
+            else if (value != null && value!.isNotEmpty)
               Text(
-                widget.value!,
+                value!,
                 style: GoogleFonts.inter(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -2333,7 +3203,7 @@ class _SettingsRowState extends State<_SettingsRow> {
                 ),
               )
             else
-              widget.trailing ?? const SizedBox(),
+              trailing ?? const SizedBox(),
           ],
         ),
       ),
@@ -2352,6 +3222,7 @@ class ColorDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final state = AppStateScope.of(context);
     return Column(
       children: [
         Container(
@@ -2385,10 +3256,33 @@ class ColorDetailScreen extends StatelessWidget {
                 right: 14,
                 child: Row(
                   children: [
-                    _CircleBtn(Icons.favorite_border),
-                    _CircleBtn(Icons.edit),
-                    _CircleBtn(Icons.share),
-                    _CircleBtn(Icons.delete, danger: true),
+                    _CircleBtn(
+                      state.isFavorite(color)
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      onTap: () {
+                        state.toggleFavorite(color);
+                        showToast(
+                          context,
+                          state.isFavorite(color)
+                              ? 'Added to favorites'
+                              : 'Removed from favorites',
+                        );
+                      },
+                    ),
+                    _CircleBtn(
+                      Icons.edit,
+                      onTap: () => _showRenameDialog(context, state),
+                    ),
+                    _CircleBtn(
+                      Icons.share,
+                      onTap: () => showToast(context, 'Shared color'),
+                    ),
+                    _CircleBtn(
+                      Icons.delete,
+                      danger: true,
+                      onTap: () => showToast(context, 'Color removed'),
+                    ),
                   ],
                 ),
               ),
@@ -2396,7 +3290,7 @@ class ColorDetailScreen extends StatelessWidget {
                 bottom: 14,
                 left: 14,
                 child: Text(
-                  color.name,
+                  state.displayName(color),
                   style: GoogleFonts.inter(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
@@ -2421,9 +3315,14 @@ class ColorDetailScreen extends StatelessWidget {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Expanded(child: _MainButton('Apply Changes', () {})),
+                  Expanded(
+                    child: _MainButton(
+                      'Apply Changes',
+                      () => showToast(context, 'Changes applied'),
+                    ),
+                  ),
                   const SizedBox(width: 8),
-                  _GhostButton('Reset', () {}),
+                  _GhostButton('Reset', () => showToast(context, 'Reset')),
                 ],
               ),
               const SizedBox(height: 16),
@@ -2440,20 +3339,98 @@ class ColorDetailScreen extends StatelessWidget {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Expanded(child: _MainButton('Share Palette', () {})),
+                  Expanded(
+                    child: _MainButton(
+                      'Share Palette',
+                      () => showToast(context, 'Palette shared'),
+                    ),
+                  ),
                   const SizedBox(width: 8),
-                  _GhostButton('Save', () {}),
+                  _GhostButton(
+                    'Save',
+                    () => showToast(context, 'Palette saved'),
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
               _SectionTitle('Add to Palette'),
-              _PaletteTags(),
+              _PaletteTags(
+                selected: state.selectedPaletteName,
+                onSelect: state.setSelectedPaletteName,
+              ),
               const SizedBox(height: 12),
-              _MainButton('Confirm', () {}),
+              _MainButton(
+                'Confirm',
+                () {
+                  if (state.selectedPaletteName.isEmpty) {
+                    showToast(context, 'Create a palette first');
+                    return;
+                  }
+                  state.addColorToPalette(state.selectedPaletteName, color);
+                  showToast(context, 'Added to ${state.selectedPaletteName}');
+                },
+              ),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  void _showRenameDialog(BuildContext context, AppState state) {
+    final controller =
+        TextEditingController(text: state.displayName(color));
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.offBlack,
+          title: Text(
+            'Rename Color',
+            style: GoogleFonts.inter(
+              color: AppColors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          content: TextField(
+            controller: controller,
+            style: GoogleFonts.inter(
+              color: AppColors.white,
+              fontWeight: FontWeight.w600,
+            ),
+            decoration: InputDecoration(
+              hintText: 'New name',
+              hintStyle: GoogleFonts.inter(color: AppColors.muted),
+              filled: true,
+              fillColor: AppColors.dark,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.inter(color: AppColors.muted),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                state.renameColor(color, controller.text);
+                Navigator.pop(context);
+                showToast(context, 'Color renamed');
+              },
+              child: Text(
+                'Save',
+                style: GoogleFonts.inter(color: AppColors.white),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -2461,23 +3438,27 @@ class ColorDetailScreen extends StatelessWidget {
 class _CircleBtn extends StatelessWidget {
   final IconData icon;
   final bool danger;
-  const _CircleBtn(this.icon, {this.danger = false});
+  final VoidCallback? onTap;
+  const _CircleBtn(this.icon, {this.danger = false, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 36,
-      height: 36,
-      margin: const EdgeInsets.only(left: 6),
-      decoration: BoxDecoration(
-        color: Colors.black26,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white10),
-      ),
-      child: Icon(
-        icon,
-        color: danger ? Colors.redAccent : Colors.white,
-        size: 15,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 36,
+        height: 36,
+        margin: const EdgeInsets.only(left: 6),
+        decoration: BoxDecoration(
+          color: Colors.black26,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white10),
+        ),
+        child: Icon(
+          icon,
+          color: danger ? Colors.redAccent : Colors.white,
+          size: 15,
+        ),
       ),
     );
   }
@@ -2864,45 +3845,109 @@ class _PaletteRow extends StatelessWidget {
 }
 
 class _PaletteTags extends StatelessWidget {
+  final String selected;
+  final ValueChanged<String> onSelect;
+  const _PaletteTags({required this.selected, required this.onSelect});
+
   @override
   Widget build(BuildContext context) {
-    final tags = [
-      'Zimmer',
-      'Supernova',
-      'Ocean Calm',
-      'Desert Dusk',
-      'Mono Studio',
-      '+ New',
-    ];
+    final state = AppStateScope.of(context);
+    final tags = state.palettes.map((p) => p.name).toList();
+    tags.add('+ New');
     return Wrap(
       spacing: 6,
       runSpacing: 6,
       children:
           tags
               .map(
-                (t) => Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: t == 'Zimmer' ? AppColors.white : AppColors.dark,
-                    border: Border.all(
-                      color: t == 'Zimmer' ? AppColors.white : AppColors.border,
+                (t) => GestureDetector(
+                  onTap: () {
+                    if (t == '+ New') {
+                      _showNewPaletteDialog(context, state);
+                      return;
+                    }
+                    onSelect(t);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
                     ),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    t,
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: t == 'Zimmer' ? AppColors.black : AppColors.muted,
+                    decoration: BoxDecoration(
+                      color: t == selected ? AppColors.white : AppColors.dark,
+                      border: Border.all(
+                        color:
+                            t == selected ? AppColors.white : AppColors.border,
+                      ),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      t,
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color:
+                            t == selected ? AppColors.black : AppColors.muted,
+                      ),
                     ),
                   ),
                 ),
               )
               .toList(),
+    );
+  }
+
+  void _showNewPaletteDialog(BuildContext context, AppState state) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.offBlack,
+        title: Text(
+          'New Palette',
+          style: GoogleFonts.inter(
+            color: AppColors.white,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: TextField(
+          controller: controller,
+          style: GoogleFonts.inter(
+            color: AppColors.white,
+            fontWeight: FontWeight.w600,
+          ),
+          decoration: InputDecoration(
+            hintText: 'Palette name',
+            hintStyle: GoogleFonts.inter(color: AppColors.muted),
+            filled: true,
+            fillColor: AppColors.dark,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.inter(color: AppColors.muted),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              state.addPalette(controller.text);
+              Navigator.pop(context);
+              showToast(context, 'Palette created');
+            },
+            child: Text(
+              'Create',
+              style: GoogleFonts.inter(color: AppColors.white),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
