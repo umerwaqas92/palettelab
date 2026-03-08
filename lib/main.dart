@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'dart:ui';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
@@ -1874,6 +1875,11 @@ class _PickerScreenState extends State<PickerScreen>
   double _minZoom = 1.0;
   double _maxZoom = 1.0;
   ColorData? _detectedColor;
+  int _controllerEpoch = 0;
+  int _activeControllerEpoch = 0;
+  double? _smoothedR;
+  double? _smoothedG;
+  double? _smoothedB;
   Offset _samplePoint = const Offset(0.5, 0.5);
   DateTime _lastSample = DateTime.fromMillisecondsSinceEpoch(0);
   Timer? _snapBackTimer;
@@ -1910,20 +1916,25 @@ class _PickerScreenState extends State<PickerScreen>
         defaultTargetPlatform == TargetPlatform.iOS
             ? ImageFormatGroup.bgra8888
             : ImageFormatGroup.yuv420;
+    final preset = ResolutionPreset.max;
     final controller = CameraController(
       description,
-      ResolutionPreset.medium,
+      preset,
       imageFormatGroup: formatGroup,
       enableAudio: false,
     );
+    _controllerEpoch += 1;
+    final epoch = _controllerEpoch;
     _controller = controller;
     _initializeControllerFuture = controller.initialize().then((_) async {
+      if (!mounted || epoch != _controllerEpoch) return;
       _minZoom = await controller.getMinZoomLevel();
       _maxZoom = await controller.getMaxZoomLevel();
       await _setZoomLevel(1.0);
       if (!controller.value.isStreamingImages) {
         await controller.startImageStream(_onCameraImage);
       }
+      _activeControllerEpoch = epoch;
       if (!mounted) return;
       setState(() {});
     });
@@ -1933,11 +1944,13 @@ class _PickerScreenState extends State<PickerScreen>
 
   Future<void> _disposeCamera() async {
     _snapBackTimer?.cancel();
-    if (_controller?.value.isStreamingImages ?? false) {
-      await _controller?.stopImageStream();
-    }
-    await _controller?.dispose();
+    final controller = _controller;
     _controller = null;
+    _activeControllerEpoch = 0;
+    if (controller?.value.isStreamingImages ?? false) {
+      await controller?.stopImageStream();
+    }
+    await controller?.dispose();
   }
 
   Future<void> _setZoomLevel(double value) async {
@@ -1981,8 +1994,9 @@ class _PickerScreenState extends State<PickerScreen>
   }
 
   Future<void> _onCameraImage(CameraImage image) async {
-    if (_isProcessingFrame) return;
+    if (_isProcessingFrame || !mounted) return;
     final now = DateTime.now();
+    // 30 fps is plenty (approx 33ms)
     if (now.difference(_lastSample).inMilliseconds < 33) return;
     _lastSample = now;
     _isProcessingFrame = true;
@@ -1991,6 +2005,8 @@ class _PickerScreenState extends State<PickerScreen>
       if (color != null && mounted) {
         setState(() => _detectedColor = color);
       }
+    } catch (e) {
+      debugPrint('Error sampling color: $e');
     } finally {
       _isProcessingFrame = false;
     }
@@ -2001,15 +2017,15 @@ class _PickerScreenState extends State<PickerScreen>
     final framePoint = _framePointFromPreview(image);
     final centerX = framePoint.dx.clamp(0.0, image.width - 1.0).toInt();
     final centerY = framePoint.dy.clamp(0.0, image.height - 1.0).toInt();
-    const radius = 10;
+    const radius = 6;
     var totalR = 0;
     var totalG = 0;
     var totalB = 0;
     var count = 0;
 
-    for (var y = centerY - radius; y <= centerY + radius; y += 2) {
+    for (var y = centerY - radius; y <= centerY + radius; y += 3) {
       if (y < 0 || y >= image.height) continue;
-      for (var x = centerX - radius; x <= centerX + radius; x += 2) {
+      for (var x = centerX - radius; x <= centerX + radius; x += 3) {
         if (x < 0 || x >= image.width) continue;
         final rgb =
             image.planes.length == 1
@@ -2023,10 +2039,16 @@ class _PickerScreenState extends State<PickerScreen>
     }
 
     if (count == 0) return null;
+    final rawR = totalR / count;
+    final rawG = totalG / count;
+    final rawB = totalB / count;
+    _smoothedR = _smoothedR == null ? rawR : _smoothedR! * 0.7 + rawR * 0.3;
+    _smoothedG = _smoothedG == null ? rawG : _smoothedG! * 0.7 + rawG * 0.3;
+    _smoothedB = _smoothedB == null ? rawB : _smoothedB! * 0.7 + rawB * 0.3;
     return _colorFromRgb(
-      (totalR / count).round(),
-      (totalG / count).round(),
-      (totalB / count).round(),
+      _smoothedR!.round(),
+      _smoothedG!.round(),
+      _smoothedB!.round(),
     );
   }
 
@@ -2047,15 +2069,21 @@ class _PickerScreenState extends State<PickerScreen>
 
   Offset _framePointFromPreview(CameraImage image) {
     final camera = _controller?.description;
-    final lensDirection = camera?.lensDirection ?? CameraLensDirection.back;
-    final sensorOrientation = camera?.sensorOrientation ?? 90;
+    if (camera == null) return Offset(image.width / 2, image.height / 2);
+
+    final lensDirection = camera.lensDirection;
+    final sensorOrientation = camera.sensorOrientation;
     var x = _samplePoint.dx;
     var y = _samplePoint.dy;
 
+    // Correct for front camera if needed
     if (lensDirection == CameraLensDirection.front) {
       x = 1 - x;
     }
 
+    // Android/iOS typical mapping:
+    // Sensor frame is usually in landscape orientation (e.g. 1920x1080)
+    // 90/270 represents the physical sensor orientation relative to the device.
     switch (sensorOrientation) {
       case 90:
         return Offset(y * image.width, (1 - x) * image.height);
@@ -2156,26 +2184,7 @@ class _PickerScreenState extends State<PickerScreen>
                         _handlePreviewTap(details.localPosition, previewRect),
                 child: Stack(
                   children: [
-                    Positioned.fill(
-                      child: _buildCameraPreview(previewRect),
-                    ),
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.black.withValues(alpha: 0.18),
-                              Colors.transparent,
-                              Colors.black.withValues(alpha: 0.12),
-                              Colors.black.withValues(alpha: 0.24),
-                            ],
-                            stops: const [0, 0.22, 0.72, 1],
-                          ),
-                        ),
-                      ),
-                    ),
+                    Positioned.fill(child: _buildCameraPreview(previewRect)),
                     _buildReticle(color, previewRect),
                     _buildLiveColorBadge(color, previewRect, topInset),
                     Positioned(
@@ -2185,35 +2194,28 @@ class _PickerScreenState extends State<PickerScreen>
                       child: Center(child: _buildTopPill()),
                     ),
                     Positioned(
-                      left: 16,
-                      bottom: bottomInset + 86,
-                      child: _buildMiniAction(
-                        icon: Icons.image_outlined,
-                        onTap: _pickFromGallery,
-                      ),
-                    ),
-                    Positioned(
-                      right: 16,
-                      bottom: bottomInset + 86,
-                      child: _buildMiniAction(
-                        icon:
-                            _flashEnabled
-                                ? Icons.flash_on_rounded
-                                : Icons.flash_off_rounded,
-                        onTap: _toggleFlash,
-                      ),
-                    ),
-                    Positioned(
                       left: 0,
                       right: 0,
-                      bottom: bottomInset + 82,
-                      child: Center(child: _buildShutterButton()),
-                    ),
-                    Positioned(
-                      left: 16,
-                      right: 16,
-                      bottom: bottomInset + 18,
-                      child: _buildModeBar(),
+                      bottom: bottomInset + 40,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 40),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildMiniAction(
+                              icon: Icons.image_outlined,
+                              onTap: _pickFromGallery,
+                            ),
+                            _buildShutterButton(),
+                            _buildMiniAction(
+                              icon: _flashEnabled
+                                  ? Icons.flash_on_rounded
+                                  : Icons.flash_off_rounded,
+                              onTap: _toggleFlash,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -2268,6 +2270,12 @@ class _PickerScreenState extends State<PickerScreen>
     return FutureBuilder<void>(
       future: _initializeControllerFuture,
       builder: (context, snapshot) {
+        if (_activeControllerEpoch == 0 ||
+            _controller == null ||
+            !_controller!.value.isInitialized ||
+            _activeControllerEpoch != _controllerEpoch) {
+          return _buildCameraFallback('Camera unavailable');
+        }
         if (snapshot.hasError) {
           return _buildCameraFallback('Camera permission denied');
         }
@@ -2307,126 +2315,153 @@ class _PickerScreenState extends State<PickerScreen>
   }
 
   Widget _buildTopPill() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.88),
-        borderRadius: BorderRadius.circular(22),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+          ),
+          child: Text(
             'Litur',
             style: GoogleFonts.inter(
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-              color: AppColors.black,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              letterSpacing: 1.2,
             ),
           ),
-          Text(
-            'Loading Ti Bits...',
-            style: GoogleFonts.inter(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: AppColors.muted2,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildReticle(ColorData color, Rect previewRect) {
     return Positioned(
-      left: previewRect.left + (_samplePoint.dx * previewRect.width) - 23,
-      top: previewRect.top + (_samplePoint.dy * previewRect.height) - 23,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.20),
-              border: Border.all(color: AppColors.black, width: 2),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x33000000),
-                  blurRadius: 12,
-                  offset: Offset(0, 4),
+      left: previewRect.left + (_samplePoint.dx * previewRect.width) - 24,
+      top: previewRect.top + (_samplePoint.dy * previewRect.height) - 24,
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 2),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 8,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              width: 4,
+              height: 4,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+            ),
+            // Inner ring
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.4),
+                  width: 1,
                 ),
-              ],
+              ),
             ),
-          ),
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: color.color.withValues(alpha: 0.12),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.75)),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildLiveColorBadge(ColorData color, Rect previewRect, double topInset) {
-    const badgeWidth = 110.0;
-    const badgeHeight = 34.0;
+  Widget _buildLiveColorBadge(
+    ColorData color,
+    Rect previewRect,
+    double topInset,
+  ) {
+    const badgeWidth = 120.0;
+    const badgeHeight = 36.0;
     final screenSize = MediaQuery.of(context).size;
     final anchorX = previewRect.left + (_samplePoint.dx * previewRect.width);
     final anchorY = previewRect.top + (_samplePoint.dy * previewRect.height);
-    final left = (anchorX + 28).clamp(
-      18.0,
-      screenSize.width - badgeWidth - 18,
-    );
-    final top = (anchorY + 14).clamp(
-      topInset + 70,
-      screenSize.height - 220,
-    );
+    final left = (anchorX + 32).clamp(16.0, screenSize.width - badgeWidth - 16);
+    final top = (anchorY + 20).clamp(topInset + 80, screenSize.height - 240);
     return Positioned(
       left: left,
       top: top,
-      child: Container(
-        height: badgeHeight,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.88),
-          borderRadius: BorderRadius.circular(7),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x33000000),
-              blurRadius: 12,
-              offset: Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 14,
-              height: 14,
-              decoration: BoxDecoration(
-                color: color.color,
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: Container(
+            height: badgeHeight,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.65),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.1),
+                width: 0.5,
               ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black45,
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Text(
-              color.hex,
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: AppColors.white,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 14,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: color.color,
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      width: 1,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  color.hex,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap:
+                      () => showToast(
+                        context,
+                        'Copied ${color.hex}',
+                        copyText: color.hex,
+                      ),
+                  child: const Icon(Icons.copy, size: 12, color: Colors.white54),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -2436,19 +2471,25 @@ class _PickerScreenState extends State<PickerScreen>
     return GestureDetector(
       onTap: _saveCurrentColor,
       child: Container(
-        width: 74,
-        height: 74,
+        width: 72,
+        height: 72,
+        padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.white.withValues(alpha: 0.94),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.75), width: 6),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x33000000),
-              blurRadius: 18,
-              offset: Offset(0, 8),
-            ),
-          ],
+          border: Border.all(color: Colors.white, width: 3.5),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white.withValues(alpha: 0.95),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x22000000),
+                blurRadius: 12,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -2460,84 +2501,20 @@ class _PickerScreenState extends State<PickerScreen>
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 34,
-        height: 34,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.white.withValues(alpha: 0.22),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
-        ),
-        child: Icon(icon, size: 18, color: AppColors.white),
-      ),
-    );
-  }
-
-  Widget _buildModeBar() {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.90),
-        borderRadius: BorderRadius.circular(22),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildModeChip(
-              icon: Icons.camera_alt_rounded,
-              label: 'From Camera',
-              isSelected: true,
-              onTap: () => _setZoomLevel(1.0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.15),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
             ),
+            child: Icon(icon, size: 22, color: AppColors.white),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _buildModeChip(
-              icon: Icons.image_rounded,
-              label: 'From Image',
-              isSelected: false,
-              onTap: _pickFromGallery,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildModeChip({
-    required IconData icon,
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 42,
-        decoration: BoxDecoration(
-          color:
-              isSelected
-                  ? const Color(0xFFF1F1EC)
-                  : Colors.transparent,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 18, color: AppColors.black),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                label,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.black,
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );
