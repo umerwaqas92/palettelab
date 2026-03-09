@@ -67,7 +67,7 @@ class LiturApp extends StatelessWidget {
 
 class AppColors {
   static const Color black = Color(0xFF0a0a0a);
-  static const Color offBlack = Color(0xFF111);
+  static const Color offBlack = Color(0xFF111111);
   static const Color dark = Color(0xFF1c1c1c);
   static const Color mid = Color(0xFF2e2e2e);
   static const Color border = Color(0xFF2a2a2a);
@@ -594,6 +594,57 @@ final List<ColorData> colorLibrary = [
   ColorData(hex: '#8E44AD', name: 'Amethyst', r: 142, g: 68, b: 173),
   ColorData(hex: '#E67E22', name: 'Tangerine', r: 230, g: 126, b: 34),
   ColorData(hex: '#E9DEC6', name: 'Desert Sand', r: 233, g: 222, b: 198),
+  // New Colors
+  ColorData(hex: '#D35400', name: 'Pumpkin', r: 211, g: 84, b: 0),
+  ColorData(hex: '#C0392B', name: 'Pomegranate', r: 192, g: 57, b: 43),
+  ColorData(hex: '#BDC3C7', name: 'Silver', r: 189, g: 195, b: 199),
+  ColorData(hex: '#7F8C8D', name: 'Asbestos', r: 127, g: 140, b: 141),
+  ColorData(hex: '#2C3E50', name: 'Midnight Blue', r: 44, g: 62, b: 80),
+  ColorData(hex: '#F1C40F', name: 'Flat Yellow', r: 241, g: 196, b: 15),
+  ColorData(hex: '#16A085', name: 'Green Sea', r: 22, g: 160, b: 133),
+  ColorData(hex: '#27AE60', name: 'Nephritis', r: 39, g: 174, b: 96),
+  ColorData(hex: '#2980B9', name: 'Belize Hole', r: 41, g: 128, b: 185),
+  ColorData(hex: '#34495E', name: 'Wet Asphalt', r: 52, g: 73, b: 94),
+  ColorData(hex: '#9B59B6', name: 'Amethyst Light', r: 155, g: 89, b: 182),
+  ColorData(hex: '#3498DB', name: 'Peter River', r: 52, g: 152, b: 219),
+  ColorData(hex: '#E74C3C', name: 'Alizarin', r: 231, g: 76, b: 60),
+  ColorData(hex: '#95A5A6', name: 'Concrete', r: 149, g: 165, b: 166),
+  ColorData(hex: '#ECF0F1', name: 'Clouds', r: 236, g: 240, b: 241),
+  ColorData(hex: '#FF6F61', name: 'Living Coral', r: 255, g: 111, b: 97),
+  ColorData(hex: '#6B5B95', name: 'Ultra Violet', r: 107, g: 91, b: 149),
+  ColorData(hex: '#88B04B', name: 'Greenery', r: 136, g: 176, b: 75),
+  ColorData(hex: '#F7CAC9', name: 'Rose Quartz', r: 247, g: 202, b: 201),
+  ColorData(hex: '#92A8D1', name: 'Serenity', r: 146, g: 168, b: 209),
+  ColorData(hex: '#955251', name: 'Marsala', r: 149, g: 82, b: 81),
+  ColorData(hex: '#B163A3', name: 'Radiant Orchid', r: 177, g: 99, b: 163),
+  ColorData(hex: '#55B4B0', name: 'Turquoise Blue', r: 85, g: 180, b: 176),
+  ColorData(hex: '#EFC050', name: 'Mimosa', r: 239, g: 192, b: 80),
+  ColorData(hex: '#45B8AC', name: 'Blue Turquoise', r: 69, g: 184, b: 172),
+  ColorData(hex: '#D65076', name: 'True Red', r: 214, g: 80, b: 118),
+  ColorData(hex: '#DD4124', name: 'Chili Pepper', r: 221, g: 65, b: 36),
+  ColorData(hex: '#009B77', name: 'Emerald Green', r: 0, g: 155, b: 119),
+  ColorData(hex: '#B87333', name: 'Copper', r: 184, g: 115, b: 51),
+  ColorData(hex: '#FFD700', name: 'Gold Rush', r: 255, g: 215, b: 0),
+  ColorData(hex: '#C0C0C0', name: 'Platinum', r: 192, g: 192, b: 192),
+  ColorData(hex: '#E5E4E2', name: 'Almond', r: 229, g: 228, b: 226),
+  ColorData(hex: '#5D8AA8', name: 'Air Force Blue', r: 93, g: 138, b: 168),
+  ColorData(hex: '#F0F8FF', name: 'Alice Blue', r: 240, g: 248, b: 255),
+  ColorData(hex: '#E32636', name: 'Alizarin Crimson', r: 227, g: 38, b: 54),
+  ColorData(hex: '#FFBF00', name: 'Amber', r: 255, g: 191, b: 0),
+  ColorData(hex: '#9966CC', name: 'Amethyst Dark', r: 153, g: 102, b: 204),
+  ColorData(hex: '#A4C639', name: 'Android Green', r: 164, g: 198, b: 57),
+  ColorData(hex: '#F2F3F4', name: 'Anti-Flash White', r: 242, g: 243, b: 244),
+  ColorData(hex: '#CD9575', name: 'Antique Brass', r: 205, g: 149, b: 117),
+  ColorData(hex: '#665D1E', name: 'Antique Bronze', r: 102, g: 93, b: 30),
+  ColorData(hex: '#915C83', name: 'Antique Fuchsia', r: 145, g: 92, b: 131),
+  ColorData(hex: '#841B2D', name: 'Antique Ruby', r: 132, g: 27, b: 45),
+  ColorData(hex: '#FAEBD7', name: 'Antique White', r: 250, g: 235, b: 215),
+  ColorData(hex: '#008000', name: 'Office Green', r: 0, g: 128, b: 0),
+  ColorData(hex: '#8DB600', name: 'Apple Green', r: 141, g: 182, b: 0),
+  ColorData(hex: '#FBCEB1', name: 'Apricot', r: 251, g: 206, b: 177),
+  ColorData(hex: '#00FFFF', name: 'Aqua', r: 0, g: 255, b: 255),
+  ColorData(hex: '#7FFFD4', name: 'Aquamarine', r: 127, g: 255, b: 212),
+  ColorData(hex: '#D0FF14', name: 'Arctic Lime', r: 208, g: 255, b: 20),
 ];
 
 final List<PaletteData> initialPalettes = [
@@ -822,23 +873,7 @@ class _PhoneShellState extends State<PhoneShell> {
   }
 
   Widget _buildStatusBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            '9:41',
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: AppColors.white,
-            ),
-          ),
-          const SizedBox(), // Empty space instead of icons
-        ],
-      ),
-    );
+    return const SizedBox(height: 10);
   }
 
   Widget _buildTabItem(int index, String label, IconData icon) {
@@ -854,18 +889,14 @@ class _PhoneShellState extends State<PhoneShell> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 22,
-              color: isActive ? AppColors.white : Colors.white60,
-            ),
+            Icon(icon, size: 22, color: AppColors.white),
             const SizedBox(height: 3),
             Text(
               label,
               style: GoogleFonts.inter(
                 fontSize: 9,
                 fontWeight: FontWeight.w700,
-                color: isActive ? AppColors.white : Colors.white60,
+                color: AppColors.white,
               ),
             ),
           ],
@@ -981,12 +1012,6 @@ class ColorsScreen extends StatelessWidget {
                   Row(
                     children: [
                       _IconBtn(Icons.search, () => _showSearchSheet(context)),
-                      _IconBtn(Icons.tune, () => _showSortSheet(context)),
-                      _IconBtn(
-                        Icons.download,
-                        () => showToast(context, 'All colors exported!'),
-                      ),
-                      _IconBtn(Icons.share, () => _showShareSheet(context)),
                     ],
                   ),
                 ],
@@ -1020,30 +1045,33 @@ class ColorsScreen extends StatelessWidget {
                   final isActive = filter == selectedFilter;
                   return GestureDetector(
                     onTap: () => onFilterChanged(filter),
-                    child: Container(
-                      margin: const EdgeInsets.only(right: 8),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isActive ? AppColors.white : Colors.transparent,
-                        border: Border.all(
-                          color: isActive ? AppColors.white : AppColors.border,
-                          width: 1.5,
-                        ),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Center(
-                        child: Text(
-                          filter,
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: isActive ? AppColors.black : Colors.white70,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(right: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Text(
+                            filter,
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight:
+                                  isActive ? FontWeight.w800 : FontWeight.w500,
+                              color: isActive ? AppColors.white : Colors.white54,
+                            ),
                           ),
                         ),
-                      ),
+                        if (isActive)
+                          Container(
+                            margin: const EdgeInsets.only(right: 16),
+                            width: 20,
+                            height: 3,
+                            decoration: BoxDecoration(
+                              color: AppColors.white,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                      ],
                     ),
                   );
                 },
@@ -1051,43 +1079,43 @@ class ColorsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: GridView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 1,
-                ),
-                itemCount: filteredColors.length,
-                itemBuilder: (context, index) {
-                  final color = filteredColors[index];
-                  return _ColorCard(
-                    color: color,
-                    onTap: () => onColorTap(color),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0, 0.05),
+                        end: Offset.zero,
+                      ).animate(animation),
+                      child: child,
+                    ),
                   );
                 },
+                child: GridView.builder(
+                  key: ValueKey(selectedFilter),
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 1,
+                  ),
+                  itemCount: filteredColors.length,
+                  itemBuilder: (context, index) {
+                    final color = filteredColors[index];
+                    return _ColorCard(
+                      color: color,
+                      onTap: () => onColorTap(color),
+                    );
+                  },
+                ),
               ),
             ),
           ],
         ),
       ],
-    );
-  }
-
-  void _showSortSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _SortSheet(),
-    );
-  }
-
-  void _showShareSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _ShareSheet(),
     );
   }
 
@@ -2300,6 +2328,10 @@ class PickerScreen extends StatefulWidget {
 
 class _PickerScreenState extends State<PickerScreen>
     with WidgetsBindingObserver {
+  static const Duration _detectionInterval = Duration(milliseconds: 60);
+  static const int _detectionRadius = 4;
+  static const int _detectionStep = 4;
+
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
   final ImagePicker _imagePicker = ImagePicker();
@@ -2366,6 +2398,7 @@ class _PickerScreenState extends State<PickerScreen>
       if (!controller.value.isStreamingImages) {
         await controller.startImageStream(_onCameraImage);
       }
+      await _stabilizeCameraControls(controller);
       _activeControllerEpoch = epoch;
       if (!mounted) return;
       setState(() {});
@@ -2383,6 +2416,15 @@ class _PickerScreenState extends State<PickerScreen>
       await controller?.stopImageStream();
     }
     await controller?.dispose();
+  }
+
+  Future<void> _stabilizeCameraControls(CameraController controller) async {
+    try {
+      await controller.setExposureMode(ExposureMode.auto);
+      await controller.setFocusMode(FocusMode.auto);
+    } catch (error) {
+      debugPrint('Camera control stabilization skipped: $error');
+    }
   }
 
   Future<void> _setZoomLevel(double value) async {
@@ -2424,8 +2466,7 @@ class _PickerScreenState extends State<PickerScreen>
   Future<void> _onCameraImage(CameraImage image) async {
     if (_isProcessingFrame || !mounted) return;
     final now = DateTime.now();
-    // 60ms interval (approx 16 fps) to reduce CPU load and lag
-    if (now.difference(_lastSample).inMilliseconds < 60) return;
+    if (now.difference(_lastSample) < _detectionInterval) return;
     _lastSample = now;
     _isProcessingFrame = true;
     try {
@@ -2445,15 +2486,16 @@ class _PickerScreenState extends State<PickerScreen>
     final framePoint = _framePointFromPreview(image);
     final centerX = framePoint.dx.clamp(0.0, image.width - 1.0).toInt();
     final centerY = framePoint.dy.clamp(0.0, image.height - 1.0).toInt();
-    const radius = 6;
+    final radius = _detectionRadius;
+    final step = _detectionStep;
     var totalR = 0;
     var totalG = 0;
     var totalB = 0;
     var count = 0;
 
-    for (var y = centerY - radius; y <= centerY + radius; y += 3) {
+    for (var y = centerY - radius; y <= centerY + radius; y += step) {
       if (y < 0 || y >= image.height) continue;
-      for (var x = centerX - radius; x <= centerX + radius; x += 3) {
+      for (var x = centerX - radius; x <= centerX + radius; x += step) {
         if (x < 0 || x >= image.width) continue;
         final rgb =
             image.planes.length == 1
@@ -2589,7 +2631,22 @@ class _PickerScreenState extends State<PickerScreen>
                         _handlePreviewTap(details.localPosition, previewRect),
                 child: Stack(
                   children: [
-                    Positioned.fill(child: _buildCameraPreview(previewRect)),
+                    Positioned.fill(
+                      child: TweenAnimationBuilder<double>(
+                        duration: const Duration(milliseconds: 800),
+                        curve: Curves.easeOutBack,
+                        tween: Tween(begin: 0.95, end: 1.0),
+                        builder: (context, scale, child) {
+                          return Opacity(
+                            opacity: ((scale - 0.95) / 0.05).clamp(0.0, 1.0),
+                            child: Transform.scale(
+                              scale: scale,
+                              child: _buildCameraPreview(previewRect),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                     _buildReticle(color, previewRect),
                     _buildLiveColorBadge(color, previewRect, topInset),
                     Positioned(
@@ -3087,11 +3144,6 @@ class _PalettesScreenState extends State<PalettesScreen> {
                     Icons.search,
                     () => showToast(context, 'Search palettes'),
                   ),
-                  _IconBtn(
-                    Icons.download,
-                    () => showToast(context, 'Import palette'),
-                  ),
-                  _IconBtn(Icons.share, () => _showShareSheet(context)),
                 ],
               ),
             ],
@@ -3108,36 +3160,38 @@ class _PalettesScreenState extends State<PalettesScreen> {
                     .map(
                       (f) => GestureDetector(
                         onTap: () => setState(() => _selectedFilter = f),
-                        child: Container(
-                          margin: const EdgeInsets.only(right: 6),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color:
-                                f == _selectedFilter
-                                    ? AppColors.white
-                                    : Colors.transparent,
-                            border: Border.all(
-                              color:
-                                  f == _selectedFilter
-                                      ? AppColors.white
-                                      : AppColors.border,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(right: 16),
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Text(
+                                f,
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight:
+                                      f == _selectedFilter
+                                          ? FontWeight.w800
+                                          : FontWeight.w500,
+                                  color:
+                                      f == _selectedFilter
+                                          ? AppColors.white
+                                          : Colors.white54,
+                                ),
+                              ),
                             ),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            f,
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color:
-                                  f == _selectedFilter
-                                      ? AppColors.black
-                                      : Colors.white70,
-                            ),
-                          ),
+                            if (f == _selectedFilter)
+                              Container(
+                                margin: const EdgeInsets.only(right: 16),
+                                width: 20,
+                                height: 3,
+                                decoration: BoxDecoration(
+                                  color: AppColors.white,
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     )
@@ -3176,21 +3230,37 @@ class _PalettesScreenState extends State<PalettesScreen> {
         ),
         const SizedBox(height: 10),
         Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: palettes.length,
-            itemBuilder: (context, index) {
-              final palette = palettes[index];
-              return _PaletteCard(
-                palette: palette,
-                onCopy: () => showToast(context, '${palette.name} copied!'),
-                onShare: () => _showShareSheet(context),
-                onDelete: () {
-                  state.deletePalette(palette);
-                  showToast(context, '${palette.name} deleted');
-                },
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (child, animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, 0.05),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
+                ),
               );
             },
+            child: ListView.builder(
+              key: ValueKey(_selectedFilter),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: palettes.length,
+              itemBuilder: (context, index) {
+                final palette = palettes[index];
+                return _PaletteCard(
+                  palette: palette,
+                  onCopy: () => showToast(context, '${palette.name} copied!'),
+                  onShare: () => _showShareSheet(context),
+                  onDelete: () {
+                    state.deletePalette(palette);
+                    showToast(context, '${palette.name} deleted');
+                  },
+                );
+              },
+            ),
           ),
         ),
       ],
