@@ -578,7 +578,7 @@ class _PhoneShellState extends State<PhoneShell> {
                                 onCameraTap: () => _onTabTapped(2),
                               ),
                               const ExploreScreen(),
-                              const PickerScreen(),
+                              PickerScreen(onBack: () => _onTabTapped(0)),
                               const PalettesScreen(),
                               const SettingsScreen(),
                             ],
@@ -1082,14 +1082,6 @@ class _ColorCard extends StatelessWidget {
 class _SortSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final state = AppStateScope.of(context);
-    final color = ColorData(
-      hex: '#1C1C1C',
-      name: 'Obsidian Night',
-      r: 28,
-      g: 28,
-      b: 28,
-    );
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.offBlack,
@@ -1336,6 +1328,191 @@ class _GhostButton extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class GalleryResultScreen extends StatefulWidget {
+  final Uint8List imageBytes;
+  const GalleryResultScreen({super.key, required this.imageBytes});
+
+  @override
+  State<GalleryResultScreen> createState() => _GalleryResultScreenState();
+}
+
+class _GalleryResultScreenState extends State<GalleryResultScreen> {
+  List<ColorData> _palette = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _extractPalette();
+  }
+
+  Future<void> _extractPalette() async {
+    final decoded = await compute(img.decodeImage, widget.imageBytes);
+    if (decoded == null) return;
+
+    // Extract a 3x3 grid of samples for variety
+    final List<ColorData> colors = [];
+    final stepX = decoded.width ~/ 4;
+    final stepY = decoded.height ~/ 4;
+
+    for (int y = 1; y <= 3; y++) {
+      for (int x = 1; x <= 3; x++) {
+        final px = decoded.getPixel(x * stepX, y * stepY);
+        final r = px.r.toInt();
+        final g = px.g.toInt();
+        final b = px.b.toInt();
+        final hex = '#${r.toRadixString(16).padLeft(2, '0')}${g.toRadixString(16).padLeft(2, '0')}${b.toRadixString(16).padLeft(2, '0')}'.toUpperCase();
+        
+        // Find nearest name using the same logic as camera
+        var bestName = 'Sampled';
+        var bestDistance = double.infinity;
+        for (final libColor in colorLibrary) {
+          final dr = r - libColor.r;
+          final dg = g - libColor.g;
+          final db = b - libColor.b;
+          final distance = (dr * dr + dg * dg + db * db).toDouble();
+          if (distance < bestDistance) {
+            bestDistance = distance;
+            bestName = libColor.name;
+          }
+        }
+        
+        colors.add(ColorData(hex: hex, name: bestName, r: r, g: g, b: b));
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _palette = colors;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Image Palette',
+          style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 18),
+        ),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Container(
+              margin: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.5),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: Image.memory(widget.imageBytes, fit: BoxFit.cover),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        child: Text(
+                          'EXTRACTED COLORS',
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.5,
+                            color: AppColors.muted,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _palette.length,
+                          itemBuilder: (context, index) {
+                            final color = _palette[index];
+                            return GestureDetector(
+                              onTap: () => showToast(context, 'Copied ${color.hex}', copyText: color.hex),
+                              child: Container(
+                                width: 140,
+                                margin: const EdgeInsets.all(8),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: AppColors.dark,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: AppColors.border),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      width: 50,
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        color: color.color,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: Colors.white24),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      color.hex,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    Text(
+                                      color.name,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 11,
+                                        color: AppColors.muted,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
+          ),
+        ],
       ),
     );
   }
@@ -1860,7 +2037,8 @@ class _WatchBanner extends StatelessWidget {
 }
 
 class PickerScreen extends StatefulWidget {
-  const PickerScreen({super.key});
+  final VoidCallback? onBack;
+  const PickerScreen({super.key, this.onBack});
 
   @override
   State<PickerScreen> createState() => _PickerScreenState();
@@ -1916,7 +2094,7 @@ class _PickerScreenState extends State<PickerScreen>
         defaultTargetPlatform == TargetPlatform.iOS
             ? ImageFormatGroup.bgra8888
             : ImageFormatGroup.yuv420;
-    final preset = ResolutionPreset.max;
+    final preset = ResolutionPreset.medium;
     final controller = CameraController(
       description,
       preset,
@@ -1973,31 +2151,27 @@ class _PickerScreenState extends State<PickerScreen>
   }
 
   Future<void> _pickFromGallery() async {
-    final picked =
-        await _imagePicker.pickImage(source: ImageSource.gallery);
-    if (picked == null) return;
-    final bytes = await picked.readAsBytes();
-    final color = _sampleColor(bytes);
-    if (color != null && mounted) {
-      setState(() => _detectedColor = color);
-      showToast(context, '${color.hex} sampled', copyText: color.hex);
-    }
-  }
+    try {
+      final picked = await _imagePicker.pickImage(source: ImageSource.gallery);
+      if (picked == null) return;
+      if (!mounted) return;
 
-  ColorData? _sampleColor(Uint8List bytes) {
-    final decoded = img.decodeImage(bytes);
-    if (decoded == null) return null;
-    return _averageDecodedImageColor(
-      decoded,
-      Offset(decoded.width / 2, decoded.height / 2),
-    );
+      final bytes = await picked.readAsBytes();
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => GalleryResultScreen(imageBytes: bytes),
+        ),
+      );
+    } catch (e) {
+      showToast(context, 'Permission denied or error: $e');
+    }
   }
 
   Future<void> _onCameraImage(CameraImage image) async {
     if (_isProcessingFrame || !mounted) return;
     final now = DateTime.now();
-    // 30 fps is plenty (approx 33ms)
-    if (now.difference(_lastSample).inMilliseconds < 33) return;
+    // 60ms interval (approx 16 fps) to reduce CPU load and lag
+    if (now.difference(_lastSample).inMilliseconds < 60) return;
     _lastSample = now;
     _isProcessingFrame = true;
     try {
@@ -2042,9 +2216,12 @@ class _PickerScreenState extends State<PickerScreen>
     final rawR = totalR / count;
     final rawG = totalG / count;
     final rawB = totalB / count;
-    _smoothedR = _smoothedR == null ? rawR : _smoothedR! * 0.7 + rawR * 0.3;
-    _smoothedG = _smoothedG == null ? rawG : _smoothedG! * 0.7 + rawG * 0.3;
-    _smoothedB = _smoothedB == null ? rawB : _smoothedB! * 0.7 + rawB * 0.3;
+    
+    // Increased smoothing (85% previous, 15% new) for color stability
+    _smoothedR = _smoothedR == null ? rawR : _smoothedR! * 0.85 + rawR * 0.15;
+    _smoothedG = _smoothedG == null ? rawG : _smoothedG! * 0.85 + rawG * 0.15;
+    _smoothedB = _smoothedB == null ? rawB : _smoothedB! * 0.85 + rawB * 0.15;
+    
     return _colorFromRgb(
       _smoothedR!.round(),
       _smoothedG!.round(),
@@ -2189,6 +2366,14 @@ class _PickerScreenState extends State<PickerScreen>
                     _buildLiveColorBadge(color, previewRect, topInset),
                     Positioned(
                       top: topInset + 8,
+                      left: 16,
+                      child: _buildMiniAction(
+                        icon: Icons.close_rounded,
+                        onTap: widget.onBack ?? () {},
+                      ),
+                    ),
+                    Positioned(
+                      top: topInset + 8,
                       left: 0,
                       right: 0,
                       child: Center(child: _buildTopPill()),
@@ -2242,17 +2427,27 @@ class _PickerScreenState extends State<PickerScreen>
   }
 
   Rect _previewRectForSize(Size viewportSize) {
-    final aspectRatio = _controller?.value.aspectRatio ?? (9 / 16);
+    if (_controller == null || !_controller!.value.isInitialized) {
+      return Offset.zero & viewportSize;
+    }
+
+    // Camera aspect ratio is often reported as width/height in landscape (e.g., 4/3)
+    // For a portrait preview, we need the inverse (e.g., 3/4)
+    final cameraAspect = _controller!.value.aspectRatio;
+    final portraitAspect = 1 / cameraAspect;
     final viewportAspect = viewportSize.width / viewportSize.height;
+
     late double contentWidth;
     late double contentHeight;
 
-    if (aspectRatio > viewportAspect) {
+    if (portraitAspect > viewportAspect) {
+      // Camera is wider than viewport (relative to height)
       contentHeight = viewportSize.height;
-      contentWidth = contentHeight * aspectRatio;
+      contentWidth = contentHeight * portraitAspect;
     } else {
+      // Camera is taller than viewport (relative to width)
       contentWidth = viewportSize.width;
-      contentHeight = contentWidth / aspectRatio;
+      contentHeight = contentWidth / portraitAspect;
     }
 
     return Rect.fromCenter(
@@ -2361,24 +2556,27 @@ class _PickerScreenState extends State<PickerScreen>
         child: Stack(
           alignment: Alignment.center,
           children: [
+            // Center ring showing the color
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color.color.withValues(alpha: 0.8),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  width: 1,
+                ),
+              ),
+            ),
+            // Precision dot
             Container(
               width: 4,
               height: 4,
               decoration: const BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
-              ),
-            ),
-            // Inner ring
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.4),
-                  width: 1,
-                ),
               ),
             ),
           ],
