@@ -40,7 +40,9 @@ class LiturApp extends StatelessWidget {
             surface: Color(0xFF050505),
             primary: Colors.white,
           ),
-          textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme).copyWith(
+          textTheme: GoogleFonts.interTextTheme(
+            ThemeData.dark().textTheme,
+          ).copyWith(
             bodyLarge: GoogleFonts.inter(fontWeight: FontWeight.bold),
             bodyMedium: GoogleFonts.inter(fontWeight: FontWeight.bold),
             displayLarge: GoogleFonts.inter(fontWeight: FontWeight.bold),
@@ -79,9 +81,10 @@ class AppColors {
 }
 
 class AppState extends ChangeNotifier {
-  final List<PaletteData> palettes = initialPalettes
-      .map((p) => PaletteData(name: p.name, colors: List.of(p.colors)))
-      .toList();
+  final List<PaletteData> palettes =
+      initialPalettes
+          .map((p) => PaletteData(name: p.name, colors: List.of(p.colors)))
+          .toList();
   final Set<String> favorites = {};
   final Map<String, String> customNames = {};
   final Map<String, bool> settings = {
@@ -104,8 +107,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  String displayName(ColorData color) =>
-      customNames[color.hex] ?? color.name;
+  String displayName(ColorData color) => customNames[color.hex] ?? color.name;
 
   void renameColor(ColorData color, String name) {
     if (name.trim().isEmpty) return;
@@ -117,10 +119,7 @@ class AppState extends ChangeNotifier {
     final trimmed = name.trim();
     if (trimmed.isEmpty) return;
     final uniqueName = _uniquePaletteName(trimmed);
-    palettes.insert(
-      0,
-      PaletteData(name: uniqueName, colors: []),
-    );
+    palettes.insert(0, PaletteData(name: uniqueName, colors: []));
     _selectedPaletteName ??= uniqueName;
     notifyListeners();
   }
@@ -128,8 +127,7 @@ class AppState extends ChangeNotifier {
   void deletePalette(PaletteData palette) {
     palettes.removeWhere((p) => p.name == palette.name);
     if (_selectedPaletteName == palette.name) {
-      _selectedPaletteName =
-          palettes.isEmpty ? null : palettes.first.name;
+      _selectedPaletteName = palettes.isEmpty ? null : palettes.first.name;
     }
     notifyListeners();
   }
@@ -199,8 +197,7 @@ class AppStateScope extends InheritedNotifier<AppState> {
   }) : super(notifier: notifier, child: child);
 
   static AppState of(BuildContext context) {
-    final scope =
-        context.dependOnInheritedWidgetOfExactType<AppStateScope>();
+    final scope = context.dependOnInheritedWidgetOfExactType<AppStateScope>();
     return scope!.notifier!;
   }
 }
@@ -216,23 +213,28 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fade;
+  late Animation<double> _scale;
 
   @override
   void initState() {
     super.initState();
-    _controller =
-        AnimationController(vsync: this, duration: const Duration(milliseconds: 900))
-          ..forward();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..forward();
     _fade = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
-    Timer(const Duration(milliseconds: 1400), () {
+    _scale = Tween<double>(
+      begin: 0.5,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
+    Timer(const Duration(milliseconds: 1800), () {
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const PhoneShell(),
-          transitionsBuilder: (_, animation, __, child) => FadeTransition(
-            opacity: animation,
-            child: child,
-          ),
+          pageBuilder: (_, __, ___) => const OnboardingScreen(),
+          transitionsBuilder:
+              (_, animation, __, child) =>
+                  FadeTransition(opacity: animation, child: child),
         ),
       );
     });
@@ -251,42 +253,269 @@ class _SplashScreenState extends State<SplashScreen>
       body: Center(
         child: FadeTransition(
           opacity: _fade,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(22),
-                  boxShadow: const [
-                    BoxShadow(color: Color(0x55000000), blurRadius: 24),
-                  ],
+          child: ScaleTransition(
+            scale: _scale,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: const [
+                      BoxShadow(color: Color(0x40000000), blurRadius: 30),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.palette,
+                    color: Colors.black,
+                    size: 40,
+                  ),
                 ),
-                child: const Icon(Icons.palette, color: Colors.black, size: 34),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                'Litur',
-                style: GoogleFonts.inter(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.white,
+                const SizedBox(height: 16),
+                Text(
+                  'Litur',
+                  style: GoogleFonts.inter(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.white,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Color Library',
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 2,
-                  color: AppColors.muted,
+                const SizedBox(height: 6),
+                Text(
+                  'Color Library',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 2,
+                    color: AppColors.muted,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class OnboardingPage {
+  final IconData icon;
+  final String title;
+  final String description;
+
+  OnboardingPage({
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
+}
+
+class OnboardingScreen extends StatefulWidget {
+  const OnboardingScreen({super.key});
+
+  @override
+  State<OnboardingScreen> createState() => _OnboardingScreenState();
+}
+
+class _OnboardingScreenState extends State<OnboardingScreen> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  final List<OnboardingPage> _pages = [
+    OnboardingPage(
+      icon: Icons.camera_alt_outlined,
+      title: 'Pick Colors',
+      description: 'Capture colors from your camera or pick from images',
+    ),
+    OnboardingPage(
+      icon: Icons.palette_outlined,
+      title: 'Create Palettes',
+      description: 'Save and organize your favorite colors into palettes',
+    ),
+    OnboardingPage(
+      icon: Icons.grid_view_rounded,
+      title: 'Browse Library',
+      description: 'Access your color library anytime, anywhere',
+    ),
+  ];
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _nextPage() {
+    if (_currentPage < _pages.length - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const PhoneShell(),
+          transitionsBuilder:
+              (_, animation, __, child) =>
+                  FadeTransition(opacity: animation, child: child),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.black,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pushReplacement(
+                        PageRouteBuilder(
+                          pageBuilder: (_, __, ___) => const PhoneShell(),
+                          transitionsBuilder:
+                              (_, animation, __, child) => FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.border),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'Skip',
+                        style: GoogleFonts.inter(
+                          color: AppColors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: PageView.builder(
+                controller: _pageController,
+                onPageChanged: (index) => setState(() => _currentPage = index),
+                itemCount: _pages.length,
+                itemBuilder: (context, index) {
+                  final page = _pages[index];
+                  return Padding(
+                    padding: const EdgeInsets.all(40),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            color: AppColors.dark,
+                            borderRadius: BorderRadius.circular(30),
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          child: Icon(
+                            page.icon,
+                            size: 48,
+                            color: AppColors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        Text(
+                          page.title,
+                          style: GoogleFonts.inter(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          page.description,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.muted,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  _pages.length,
+                  (index) => AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: _currentPage == index ? 20 : 6,
+                    height: 6,
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    decoration: BoxDecoration(
+                      color:
+                          _currentPage == index
+                              ? AppColors.white
+                              : AppColors.border,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: GestureDetector(
+                onTap: _nextPage,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Center(
+                    child: Text(
+                      _currentPage == _pages.length - 1
+                          ? 'Get Started'
+                          : 'Next',
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
         ),
       ),
     );
@@ -572,8 +801,7 @@ class _PhoneShellState extends State<PhoneShell> {
                                 filters: _filters,
                                 selectedFilter: _selectedFilter,
                                 onFilterChanged:
-                                    (f) =>
-                                        setState(() => _selectedFilter = f),
+                                    (f) => setState(() => _selectedFilter = f),
                                 onColorTap: _openDetail,
                                 onCameraTap: () => _onTabTapped(2),
                               ),
@@ -629,7 +857,7 @@ class _PhoneShellState extends State<PhoneShell> {
             Icon(
               icon,
               size: 22,
-              color: isActive ? AppColors.white : AppColors.muted2,
+              color: isActive ? AppColors.white : Colors.white60,
             ),
             const SizedBox(height: 3),
             Text(
@@ -637,7 +865,7 @@ class _PhoneShellState extends State<PhoneShell> {
               style: GoogleFonts.inter(
                 fontSize: 9,
                 fontWeight: FontWeight.w700,
-                color: isActive ? AppColors.white : AppColors.muted2,
+                color: isActive ? AppColors.white : Colors.white60,
               ),
             ),
           ],
@@ -715,22 +943,23 @@ class ColorsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
-    final filteredColors = colorLibrary.where((color) {
-      switch (selectedFilter) {
-        case 'Favorites':
-          return state.isFavorite(color);
-        case 'Light':
-          return (color.r + color.g + color.b) / 3 > 160;
-        case 'Dark':
-          return (color.r + color.g + color.b) / 3 < 80;
-        case 'Warm':
-          return color.r > color.b;
-        case 'Cool':
-          return color.b >= color.r;
-        default:
-          return true;
-      }
-    }).toList();
+    final filteredColors =
+        colorLibrary.where((color) {
+          switch (selectedFilter) {
+            case 'Favorites':
+              return state.isFavorite(color);
+            case 'Light':
+              return (color.r + color.g + color.b) / 3 > 160;
+            case 'Dark':
+              return (color.r + color.g + color.b) / 3 < 80;
+            case 'Warm':
+              return color.r > color.b;
+            case 'Cool':
+              return color.b >= color.r;
+            default:
+              return true;
+          }
+        }).toList();
     return Stack(
       children: [
         Column(
@@ -751,10 +980,7 @@ class ColorsScreen extends StatelessWidget {
                   ),
                   Row(
                     children: [
-                      _IconBtn(
-                        Icons.search,
-                        () => _showSearchSheet(context),
-                      ),
+                      _IconBtn(Icons.search, () => _showSearchSheet(context)),
                       _IconBtn(Icons.tune, () => _showSortSheet(context)),
                       _IconBtn(
                         Icons.download,
@@ -775,7 +1001,10 @@ class ColorsScreen extends StatelessWidget {
                   const SizedBox(width: 8),
                   _StatCard('${AppStateScope.of(context).palettes.length}', ''),
                   const SizedBox(width: 8),
-                  _StatCard('${AppStateScope.of(context).favorites.length}', ''),
+                  _StatCard(
+                    '${AppStateScope.of(context).favorites.length}',
+                    '',
+                  ),
                 ],
               ),
             ),
@@ -811,7 +1040,7 @@ class ColorsScreen extends StatelessWidget {
                           style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: isActive ? AppColors.black : AppColors.muted,
+                            color: isActive ? AppColors.black : Colors.white70,
                           ),
                         ),
                       ),
@@ -871,13 +1100,14 @@ class ColorsScreen extends StatelessWidget {
         String query = '';
         return StatefulBuilder(
           builder: (context, setModalState) {
-            final results = colorLibrary
-                .where(
-                  (c) =>
-                      c.name.toLowerCase().contains(query.toLowerCase()) ||
-                      c.hex.toLowerCase().contains(query.toLowerCase()),
-                )
-                .toList();
+            final results =
+                colorLibrary
+                    .where(
+                      (c) =>
+                          c.name.toLowerCase().contains(query.toLowerCase()) ||
+                          c.hex.toLowerCase().contains(query.toLowerCase()),
+                    )
+                    .toList();
             return Container(
               padding: EdgeInsets.only(
                 left: 20,
@@ -915,8 +1145,7 @@ class ColorsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   TextField(
-                    onChanged: (value) =>
-                        setModalState(() => query = value),
+                    onChanged: (value) => setModalState(() => query = value),
                     style: GoogleFonts.inter(
                       color: AppColors.white,
                       fontWeight: FontWeight.w600,
@@ -1066,9 +1295,10 @@ class _ColorCard extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
-                  color: (color.r + color.g + color.b) / 3 > 128
-                      ? Colors.black54
-                      : Colors.white70,
+                  color:
+                      (color.r + color.g + color.b) / 3 > 128
+                          ? Colors.black54
+                          : Colors.white70,
                 ),
               ),
             ),
@@ -1366,8 +1596,10 @@ class _GalleryResultScreenState extends State<GalleryResultScreen> {
         final r = px.r.toInt();
         final g = px.g.toInt();
         final b = px.b.toInt();
-        final hex = '#${r.toRadixString(16).padLeft(2, '0')}${g.toRadixString(16).padLeft(2, '0')}${b.toRadixString(16).padLeft(2, '0')}'.toUpperCase();
-        
+        final hex =
+            '#${r.toRadixString(16).padLeft(2, '0')}${g.toRadixString(16).padLeft(2, '0')}${b.toRadixString(16).padLeft(2, '0')}'
+                .toUpperCase();
+
         // Find nearest name using the same logic as camera
         var bestName = 'Sampled';
         var bestDistance = double.infinity;
@@ -1381,7 +1613,7 @@ class _GalleryResultScreenState extends State<GalleryResultScreen> {
             bestName = libColor.name;
           }
         }
-        
+
         colors.add(ColorData(hex: hex, name: bestName, r: r, g: g, b: b));
       }
     }
@@ -1402,7 +1634,10 @@ class _GalleryResultScreenState extends State<GalleryResultScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -1434,83 +1669,96 @@ class _GalleryResultScreenState extends State<GalleryResultScreen> {
           ),
           Expanded(
             flex: 2,
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: Colors.white))
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        child: Text(
-                          'EXTRACTED COLORS',
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1.5,
-                            color: AppColors.muted,
+            child:
+                _isLoading
+                    ? const Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    )
+                    : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          child: Text(
+                            'EXTRACTED COLORS',
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.5,
+                              color: AppColors.muted,
+                            ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          scrollDirection: Axis.horizontal,
-                          itemCount: _palette.length,
-                          itemBuilder: (context, index) {
-                            final color = _palette[index];
-                            return GestureDetector(
-                              onTap: () => showToast(context, 'Copied ${color.hex}', copyText: color.hex),
-                              child: Container(
-                                width: 140,
-                                margin: const EdgeInsets.all(8),
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: AppColors.dark,
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: AppColors.border),
+                        Expanded(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            scrollDirection: Axis.horizontal,
+                            itemCount: _palette.length,
+                            itemBuilder: (context, index) {
+                              final color = _palette[index];
+                              return GestureDetector(
+                                onTap:
+                                    () => showToast(
+                                      context,
+                                      'Copied ${color.hex}',
+                                      copyText: color.hex,
+                                    ),
+                                child: Container(
+                                  width: 140,
+                                  margin: const EdgeInsets.all(8),
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.dark,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: AppColors.border),
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        width: 50,
+                                        height: 50,
+                                        decoration: BoxDecoration(
+                                          color: color.color,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white24,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        color.hex,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w900,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      Text(
+                                        color.name,
+                                        textAlign: TextAlign.center,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 11,
+                                          color: AppColors.muted,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      width: 50,
-                                      height: 50,
-                                      decoration: BoxDecoration(
-                                        color: color.color,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(color: Colors.white24),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      color.hex,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w900,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    Text(
-                                      color.name,
-                                      textAlign: TextAlign.center,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 11,
-                                        color: AppColors.muted,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 40),
-                    ],
-                  ),
+                        const SizedBox(height: 40),
+                      ],
+                    ),
           ),
         ],
       ),
@@ -1553,10 +1801,7 @@ class ExploreScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              _IconBtn(
-                Icons.search,
-                () => _showExploreSearch(context),
-              ),
+              _IconBtn(Icons.search, () => _showExploreSearch(context)),
             ],
           ),
         ),
@@ -1693,9 +1938,7 @@ class _ColorOfDay extends StatelessWidget {
                         state.toggleFavorite(color);
                         showToast(
                           context,
-                          state.isFavorite(color)
-                              ? 'Saved!'
-                              : 'Removed',
+                          state.isFavorite(color) ? 'Saved!' : 'Removed',
                         );
                       },
                     ),
@@ -1718,8 +1961,6 @@ class _ColorOfDay extends StatelessWidget {
       builder: (context) => _ShareSheet(),
     );
   }
-
-
 }
 
 void _showExploreSearch(BuildContext context) {
@@ -1731,13 +1972,14 @@ void _showExploreSearch(BuildContext context) {
       String query = '';
       return StatefulBuilder(
         builder: (context, setModalState) {
-          final results = colorLibrary
-              .where(
-                (c) =>
-                    c.name.toLowerCase().contains(query.toLowerCase()) ||
-                    c.hex.toLowerCase().contains(query.toLowerCase()),
-              )
-              .toList();
+          final results =
+              colorLibrary
+                  .where(
+                    (c) =>
+                        c.name.toLowerCase().contains(query.toLowerCase()) ||
+                        c.hex.toLowerCase().contains(query.toLowerCase()),
+                  )
+                  .toList();
           return Container(
             padding: EdgeInsets.only(
               left: 20,
@@ -1775,8 +2017,7 @@ void _showExploreSearch(BuildContext context) {
                 ),
                 const SizedBox(height: 12),
                 TextField(
-                  onChanged: (value) =>
-                      setModalState(() => query = value),
+                  onChanged: (value) => setModalState(() => query = value),
                   style: GoogleFonts.inter(
                     color: AppColors.white,
                     fontWeight: FontWeight.w600,
@@ -1892,11 +2133,16 @@ class _TrendingRow extends StatelessWidget {
             const Color(0xFF666),
             const Color(0xFFccc),
           ], onTap: () => showToast(context, 'Monochrome opened')),
-          _TrendCard('Sunset Fade', '1.8k', [
-            const Color(0xFFC0392B),
-            const Color(0xFFE67E22),
-            const Color(0xFFFBCE50),
-          ], onTap: () => showToast(context, 'Sunset Fade opened')),
+          _TrendCard(
+            'Sunset Fade',
+            '1.8k',
+            [
+              const Color(0xFFC0392B),
+              const Color(0xFFE67E22),
+              const Color(0xFFFBCE50),
+            ],
+            onTap: () => showToast(context, 'Sunset Fade opened'),
+          ),
           _TrendCard('Deep Ocean', '1.4k', [
             const Color(0xFF0d2240),
             const Color(0xFF5386C0),
@@ -1956,7 +2202,11 @@ class _TrendCard extends StatelessWidget {
                   ),
                   Text(
                     '$count saves',
-                    style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.muted),
+                    style: GoogleFonts.inter(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.muted,
+                    ),
                   ),
                 ],
               ),
@@ -2023,7 +2273,11 @@ class _WatchBanner extends StatelessWidget {
                   ),
                   Text(
                     'Access your colors on your wrist',
-                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.muted),
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.muted,
+                    ),
                   ),
                 ],
               ),
@@ -2216,12 +2470,12 @@ class _PickerScreenState extends State<PickerScreen>
     final rawR = totalR / count;
     final rawG = totalG / count;
     final rawB = totalB / count;
-    
+
     // Increased smoothing (85% previous, 15% new) for color stability
     _smoothedR = _smoothedR == null ? rawR : _smoothedR! * 0.85 + rawR * 0.15;
     _smoothedG = _smoothedG == null ? rawG : _smoothedG! * 0.85 + rawG * 0.15;
     _smoothedB = _smoothedB == null ? rawB : _smoothedB! * 0.85 + rawB * 0.15;
-    
+
     return _colorFromRgb(
       _smoothedR!.round(),
       _smoothedG!.round(),
@@ -2287,37 +2541,11 @@ class _PickerScreenState extends State<PickerScreen>
     final up = planeU.bytes[uvIndex];
     final vp = planeV.bytes[uvIndex];
     final r = _clampInt((yp + 1.402 * (vp - 128)).round());
-    final g =
-        _clampInt((yp - 0.344136 * (up - 128) - 0.714136 * (vp - 128)).round());
+    final g = _clampInt(
+      (yp - 0.344136 * (up - 128) - 0.714136 * (vp - 128)).round(),
+    );
     final b = _clampInt((yp + 1.772 * (up - 128)).round());
     return (r, g, b);
-  }
-
-  ColorData? _averageDecodedImageColor(img.Image image, Offset center) {
-    const radius = 14;
-    var totalR = 0;
-    var totalG = 0;
-    var totalB = 0;
-    var count = 0;
-
-    for (var y = center.dy.round() - radius; y <= center.dy.round() + radius; y += 2) {
-      if (y < 0 || y >= image.height) continue;
-      for (var x = center.dx.round() - radius; x <= center.dx.round() + radius; x += 2) {
-        if (x < 0 || x >= image.width) continue;
-        final pixel = image.getPixel(x, y);
-        totalR += pixel.r.toInt();
-        totalG += pixel.g.toInt();
-        totalB += pixel.b.toInt();
-        count += 1;
-      }
-    }
-
-    if (count == 0) return null;
-    return _colorFromRgb(
-      (totalR / count).round(),
-      (totalG / count).round(),
-      (totalB / count).round(),
-    );
   }
 
   ColorData _colorFromRgb(int r, int g, int b) {
@@ -2393,9 +2621,10 @@ class _PickerScreenState extends State<PickerScreen>
                             ),
                             _buildShutterButton(),
                             _buildMiniAction(
-                              icon: _flashEnabled
-                                  ? Icons.flash_on_rounded
-                                  : Icons.flash_off_rounded,
+                              icon:
+                                  _flashEnabled
+                                      ? Icons.flash_on_rounded
+                                      : Icons.flash_off_rounded,
                               onTap: _toggleFlash,
                             ),
                           ],
@@ -2415,8 +2644,14 @@ class _PickerScreenState extends State<PickerScreen>
   void _handlePreviewTap(Offset localPosition, Rect previewRect) {
     if (!previewRect.contains(localPosition)) return;
     final previewPoint = Offset(
-      ((localPosition.dx - previewRect.left) / previewRect.width).clamp(0.0, 1.0),
-      ((localPosition.dy - previewRect.top) / previewRect.height).clamp(0.0, 1.0),
+      ((localPosition.dx - previewRect.left) / previewRect.width).clamp(
+        0.0,
+        1.0,
+      ),
+      ((localPosition.dy - previewRect.top) / previewRect.height).clamp(
+        0.0,
+        1.0,
+      ),
     );
     setState(() => _samplePoint = previewPoint);
     _snapBackTimer?.cancel();
@@ -2546,11 +2781,7 @@ class _PickerScreenState extends State<PickerScreen>
           shape: BoxShape.circle,
           border: Border.all(color: Colors.white, width: 2),
           boxShadow: const [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 8,
-              spreadRadius: 1,
-            ),
+            BoxShadow(color: Colors.black26, blurRadius: 8, spreadRadius: 1),
           ],
         ),
         child: Stack(
@@ -2655,7 +2886,11 @@ class _PickerScreenState extends State<PickerScreen>
                         'Copied ${color.hex}',
                         copyText: color.hex,
                       ),
-                  child: const Icon(Icons.copy, size: 12, color: Colors.white54),
+                  child: const Icon(
+                    Icons.copy,
+                    size: 12,
+                    color: Colors.white54,
+                  ),
                 ),
               ],
             ),
@@ -2848,7 +3083,10 @@ class _PalettesScreenState extends State<PalettesScreen> {
               ),
               Row(
                 children: [
-                  _IconBtn(Icons.search, () => showToast(context, 'Search palettes')),
+                  _IconBtn(
+                    Icons.search,
+                    () => showToast(context, 'Search palettes'),
+                  ),
                   _IconBtn(
                     Icons.download,
                     () => showToast(context, 'Import palette'),
@@ -2897,7 +3135,7 @@ class _PalettesScreenState extends State<PalettesScreen> {
                               color:
                                   f == _selectedFilter
                                       ? AppColors.black
-                                      : AppColors.muted,
+                                      : Colors.white70,
                             ),
                           ),
                         ),
@@ -2922,14 +3160,14 @@ class _PalettesScreenState extends State<PalettesScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.add, color: AppColors.muted, size: 16),
+                const Icon(Icons.add, color: AppColors.white, size: 16),
                 const SizedBox(width: 8),
                 Text(
                   'New Palette',
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.muted,
+                    color: AppColors.white,
                   ),
                 ),
               ],
@@ -2945,10 +3183,7 @@ class _PalettesScreenState extends State<PalettesScreen> {
               final palette = palettes[index];
               return _PaletteCard(
                 palette: palette,
-                onCopy: () => showToast(
-                  context,
-                  '${palette.name} copied!',
-                ),
+                onCopy: () => showToast(context, '${palette.name} copied!'),
                 onShare: () => _showShareSheet(context),
                 onDelete: () {
                   state.deletePalette(palette);
@@ -2974,53 +3209,54 @@ class _PalettesScreenState extends State<PalettesScreen> {
     final controller = TextEditingController();
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.offBlack,
-        title: Text(
-          'New Palette',
-          style: GoogleFonts.inter(
-            color: AppColors.white,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        content: TextField(
-          controller: controller,
-          style: GoogleFonts.inter(
-            color: AppColors.white,
-            fontWeight: FontWeight.w600,
-          ),
-          decoration: InputDecoration(
-            hintText: 'Palette name',
-            hintStyle: GoogleFonts.inter(color: AppColors.muted),
-            filled: true,
-            fillColor: AppColors.dark,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: AppColors.offBlack,
+            title: Text(
+              'New Palette',
+              style: GoogleFonts.inter(
+                color: AppColors.white,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(color: AppColors.muted),
+            content: TextField(
+              controller: controller,
+              style: GoogleFonts.inter(
+                color: AppColors.white,
+                fontWeight: FontWeight.w600,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Palette name',
+                hintStyle: GoogleFonts.inter(color: AppColors.muted),
+                filled: true,
+                fillColor: AppColors.dark,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.inter(color: AppColors.muted),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  state.addPalette(controller.text);
+                  Navigator.pop(context);
+                  showToast(context, 'Palette created');
+                },
+                child: Text(
+                  'Create',
+                  style: GoogleFonts.inter(color: AppColors.white),
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              state.addPalette(controller.text);
-              Navigator.pop(context);
-              showToast(context, 'Palette created');
-            },
-            child: Text(
-              'Create',
-              style: GoogleFonts.inter(color: AppColors.white),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -3072,8 +3308,7 @@ class _PaletteCard extends StatelessWidget {
                       ]
                       : palette.colors
                           .map(
-                            (c) =>
-                                Expanded(child: Container(color: c.color)),
+                            (c) => Expanded(child: Container(color: c.color)),
                           )
                           .toList(),
             ),
@@ -3093,11 +3328,11 @@ class _PaletteCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   '${palette.colors.length} colors',
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.muted,
-                          ),
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.muted,
+                  ),
                 ),
                 const Spacer(),
                 _IconBtn(Icons.copy, onCopy),
@@ -3380,7 +3615,11 @@ class _ProfileCard extends StatelessWidget {
                 ),
                 Text(
                   '${colorLibrary.length} colors · ${state.palettes.length} palettes',
-                  style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.muted),
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.muted,
+                  ),
                 ),
               ],
             ),
@@ -3466,7 +3705,8 @@ class _SettingsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final enabled = toggleValue ?? false;
     return GestureDetector(
-      onTap: onTap ??
+      onTap:
+          onTap ??
           () {
             if (!toggle) {
               showToast(context, '$label tapped');
@@ -3510,22 +3750,18 @@ class _SettingsRow extends StatelessWidget {
                   width: 42,
                   height: 24,
                   decoration: BoxDecoration(
-                    color:
-                        enabled ? AppColors.offWhite : const Color(0xFF333),
+                    color: enabled ? AppColors.offWhite : const Color(0xFF333),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Align(
                     alignment:
-                        enabled
-                            ? Alignment.centerRight
-                            : Alignment.centerLeft,
+                        enabled ? Alignment.centerRight : Alignment.centerLeft,
                     child: Container(
                       width: 18,
                       height: 18,
                       margin: const EdgeInsets.all(3),
                       decoration: BoxDecoration(
-                        color:
-                            enabled ? Colors.black : const Color(0xFF888),
+                        color: enabled ? Colors.black : const Color(0xFF888),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -3698,17 +3934,14 @@ class ColorDetailScreen extends StatelessWidget {
                 onSelect: state.setSelectedPaletteName,
               ),
               const SizedBox(height: 12),
-              _MainButton(
-                'Confirm',
-                () {
-                  if (state.selectedPaletteName.isEmpty) {
-                    showToast(context, 'Create a palette first');
-                    return;
-                  }
-                  state.addColorToPalette(state.selectedPaletteName, color);
-                  showToast(context, 'Added to ${state.selectedPaletteName}');
-                },
-              ),
+              _MainButton('Confirm', () {
+                if (state.selectedPaletteName.isEmpty) {
+                  showToast(context, 'Create a palette first');
+                  return;
+                }
+                state.addColorToPalette(state.selectedPaletteName, color);
+                showToast(context, 'Added to ${state.selectedPaletteName}');
+              }),
             ],
           ),
         ),
@@ -3717,8 +3950,7 @@ class ColorDetailScreen extends StatelessWidget {
   }
 
   void _showRenameDialog(BuildContext context, AppState state) {
-    final controller =
-        TextEditingController(text: state.displayName(color));
+    final controller = TextEditingController(text: state.displayName(color));
     showDialog(
       context: context,
       builder: (context) {
@@ -3878,14 +4110,15 @@ class _CodeBlock extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               value,
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                color: AppColors.white,
-              ),
+              style: GoogleFonts.inter(fontSize: 13, color: AppColors.white),
             ),
             Text(
               'Tap to copy',
-              style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.muted2),
+              style: GoogleFonts.inter(
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+                color: AppColors.muted2,
+              ),
             ),
           ],
         ),
@@ -4090,11 +4323,11 @@ class _ContrastCard extends StatelessWidget {
                 ),
                 Text(
                   ratio,
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.muted,
-                          ),
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.muted,
+                  ),
                 ),
               ],
             ),
@@ -4240,53 +4473,54 @@ class _PaletteTags extends StatelessWidget {
     final controller = TextEditingController();
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.offBlack,
-        title: Text(
-          'New Palette',
-          style: GoogleFonts.inter(
-            color: AppColors.white,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        content: TextField(
-          controller: controller,
-          style: GoogleFonts.inter(
-            color: AppColors.white,
-            fontWeight: FontWeight.w600,
-          ),
-          decoration: InputDecoration(
-            hintText: 'Palette name',
-            hintStyle: GoogleFonts.inter(color: AppColors.muted),
-            filled: true,
-            fillColor: AppColors.dark,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: AppColors.offBlack,
+            title: Text(
+              'New Palette',
+              style: GoogleFonts.inter(
+                color: AppColors.white,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(color: AppColors.muted),
+            content: TextField(
+              controller: controller,
+              style: GoogleFonts.inter(
+                color: AppColors.white,
+                fontWeight: FontWeight.w600,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Palette name',
+                hintStyle: GoogleFonts.inter(color: AppColors.muted),
+                filled: true,
+                fillColor: AppColors.dark,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.inter(color: AppColors.muted),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  state.addPalette(controller.text);
+                  Navigator.pop(context);
+                  showToast(context, 'Palette created');
+                },
+                child: Text(
+                  'Create',
+                  style: GoogleFonts.inter(color: AppColors.white),
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              state.addPalette(controller.text);
-              Navigator.pop(context);
-              showToast(context, 'Palette created');
-            },
-            child: Text(
-              'Create',
-              style: GoogleFonts.inter(color: AppColors.white),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
