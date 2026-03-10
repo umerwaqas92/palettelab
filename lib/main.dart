@@ -1799,22 +1799,56 @@ class _GalleryResultScreenState extends State<GalleryResultScreen> {
     final decoded = await compute(img.decodeImage, widget.imageBytes);
     if (decoded == null) return;
 
-    // Extract a 3x3 grid of samples for variety
-    final List<ColorData> colors = [];
-    final stepX = decoded.width ~/ 4;
-    final stepY = decoded.height ~/ 4;
+    // Use a more robust sampling: 10x10 grid (100 samples)
+    final List<(int, int, int)> sampledRgb = [];
+    final stepX = decoded.width ~/ 11;
+    final stepY = decoded.height ~/ 11;
 
-    for (int y = 1; y <= 3; y++) {
-      for (int x = 1; x <= 3; x++) {
+    for (int y = 1; y <= 10; y++) {
+      for (int x = 1; x <= 10; x++) {
         final px = decoded.getPixel(x * stepX, y * stepY);
-        final r = px.r.toInt();
-        final g = px.g.toInt();
-        final b = px.b.toInt();
-        final hex =
-            '#${r.toRadixString(16).padLeft(2, '0')}${g.toRadixString(16).padLeft(2, '0')}${b.toRadixString(16).padLeft(2, '0')}'
-                .toUpperCase();
+        sampledRgb.add((px.r.toInt(), px.g.toInt(), px.b.toInt()));
+      }
+    }
 
-        // Find nearest name using the same logic as camera
+    // Group similar colors to find dominant ones
+    final List<ColorData> extractedColors = [];
+    
+    // Sort samples by "vibrancy" (sat * val) to prioritize "true" colors over grays/muds
+    sampledRgb.sort((a, b) {
+      double score(int r, int g, int b) {
+        final max = [r, g, b].reduce((curr, next) => curr > next ? curr : next);
+        final min = [r, g, b].reduce((curr, next) => curr < next ? curr : next);
+        final delta = max - min;
+        final saturation = max == 0 ? 0 : delta / max;
+        final value = max / 255.0;
+        return saturation * value;
+      }
+      return score(b.$1, b.$2, b.$3).compareTo(score(a.$1, a.$2, a.$3));
+    });
+
+    for (final rgb in sampledRgb) {
+      if (extractedColors.length >= 10) break;
+
+      final r = rgb.$1;
+      final g = rgb.$2;
+      final b = rgb.$3;
+
+      // Check if this color is too similar to already extracted colors
+      bool isTooSimilar = false;
+      for (final existing in extractedColors) {
+        final dr = r - existing.r;
+        final dg = g - existing.g;
+        final db = b - existing.b;
+        if (dr * dr + dg * dg + db * db < 1500) { // Similarity threshold
+          isTooSimilar = true;
+          break;
+        }
+      }
+
+      if (!isTooSimilar) {
+        final hex = '#${r.toRadixString(16).padLeft(2, '0')}${g.toRadixString(16).padLeft(2, '0')}${b.toRadixString(16).padLeft(2, '0')}'.toUpperCase();
+        
         var bestName = 'Sampled';
         var bestDistance = double.infinity;
         for (final libColor in colorLibrary) {
@@ -1827,14 +1861,13 @@ class _GalleryResultScreenState extends State<GalleryResultScreen> {
             bestName = libColor.name;
           }
         }
-
-        colors.add(ColorData(hex: hex, name: bestName, r: r, g: g, b: b));
+        extractedColors.add(ColorData(hex: hex, name: bestName, r: r, g: g, b: b));
       }
     }
 
     if (mounted) {
       setState(() {
-        _palette = colors;
+        _palette = extractedColors;
         _isLoading = false;
       });
     }
