@@ -17,6 +17,7 @@ dependencies:
   image: ^4.2.0
   image_picker: ^1.1.2
   share_plus: ^12.0.1
+  objective_c: ^1.1.0
 
 dev_dependencies:
   flutter_test:
