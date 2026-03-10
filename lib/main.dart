@@ -4135,9 +4135,19 @@ class ColorDetailScreen extends StatelessWidget {
                     child: _MainButton(
                       'Share Palette',
                       () {
-                        final palette = generatePalette(color);
+                        final colorValue = color.color;
+                        String toHex(Color c) => '#${c.value.toRadixString(16).padLeft(8, '0').toUpperCase().substring(2)}';
+                        
+                        final palette = [
+                          toHex(Color.lerp(colorValue, Colors.black, 0.5)!),
+                          toHex(Color.lerp(colorValue, Colors.black, 0.3)!),
+                          toHex(colorValue),
+                          toHex(Color.lerp(colorValue, Colors.white, 0.5)!),
+                          toHex(Color.lerp(colorValue, Colors.white, 0.7)!),
+                        ];
+
                         final content = 'Generated Palette for ${state.displayName(color)} (${color.hex}):\n'
-                            '${palette.map((c) => c.hex).join(', ')}';
+                            '${palette.join(', ')}';
                         Share.share(content);
                       },
                     ),
