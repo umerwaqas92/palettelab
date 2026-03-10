@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+import 'package:share_plus/share_plus.dart';
 
 List<CameraDescription> appCameras = [];
 
@@ -844,6 +845,141 @@ final List<PaletteData> initialPalettes = [
       ColorData(hex: '#C0392B', name: 'Crimson', r: 192, g: 57, b: 43),
     ],
   ),
+  PaletteData(
+    name: 'Nordic Winter',
+    colors: [
+      ColorData(hex: '#2E3440', name: 'Polar Night', r: 46, g: 52, b: 64),
+      ColorData(hex: '#4C566A', name: 'Stormy Gray', r: 76, g: 86, b: 106),
+      ColorData(hex: '#88C0D0', name: 'Frost Blue', r: 136, g: 192, b: 208),
+      ColorData(hex: '#E5E9F0', name: 'Snow White', r: 229, g: 233, b: 240),
+    ],
+  ),
+  PaletteData(
+    name: 'Cyberpunk',
+    colors: [
+      ColorData(hex: '#FDEE00', name: 'Cyber Yellow', r: 253, g: 238, b: 0),
+      ColorData(hex: '#FF003C', name: 'Neon Red', r: 255, g: 0, b: 60),
+      ColorData(hex: '#00E5FF', name: 'Cyan Spark', r: 0, g: 229, b: 255),
+      ColorData(hex: '#1A1A1A', name: 'Deep Onyx', r: 26, g: 26, b: 26),
+    ],
+  ),
+  PaletteData(
+    name: 'Forest Moss',
+    colors: [
+      ColorData(hex: '#2D3A27', name: 'Deep Forest', r: 45, g: 58, b: 39),
+      ColorData(hex: '#4B5D44', name: 'Moss Green', r: 75, g: 93, b: 68),
+      ColorData(hex: '#A4AC86', name: 'Sage', r: 164, g: 172, b: 134),
+      ColorData(hex: '#C2C5AA', name: 'Parchment', r: 194, g: 197, b: 170),
+    ],
+  ),
+  PaletteData(
+    name: 'Retro Sunset',
+    colors: [
+      ColorData(hex: '#FF5F6D', name: 'Flamingo', r: 255, g: 95, b: 109),
+      ColorData(hex: '#FFC371', name: 'Peach', r: 255, g: 195, b: 113),
+      ColorData(hex: '#403B4A', name: 'Twilight', r: 64, g: 59, b: 74),
+      ColorData(hex: '#E7E9BB', name: 'Pale Sun', r: 231, g: 233, b: 187),
+    ],
+  ),
+  PaletteData(
+    name: 'Midnight Ocean',
+    colors: [
+      ColorData(hex: '#0F2027', name: 'Deep Sea', r: 15, g: 32, b: 39),
+      ColorData(hex: '#203A43', name: 'Abyss', r: 32, g: 58, b: 67),
+      ColorData(hex: '#2C5364', name: 'Wave', r: 44, g: 83, b: 100),
+      ColorData(hex: '#00D2FF', name: 'Surface', r: 0, g: 210, b: 255),
+    ],
+  ),
+  PaletteData(
+    name: 'Sakura Bloom',
+    colors: [
+      ColorData(hex: '#FFE5E5', name: 'Petal', r: 255, g: 229, b: 229),
+      ColorData(hex: '#FFB7B2', name: 'Blossom', r: 255, g: 183, b: 178),
+      ColorData(hex: '#FF9AA2', name: 'Sakura', r: 255, g: 154, b: 162),
+      ColorData(hex: '#E2B0FF', name: 'Lilac', r: 226, g: 176, b: 255),
+    ],
+  ),
+  PaletteData(
+    name: 'Autumn Leaves',
+    colors: [
+      ColorData(hex: '#5D4037', name: 'Bark', r: 93, g: 64, b: 55),
+      ColorData(hex: '#D84315', name: 'Rust', r: 216, g: 67, b: 21),
+      ColorData(hex: '#FF8F00', name: 'Amber', r: 255, g: 143, b: 0),
+      ColorData(hex: '#FFB300', name: 'Gold Leaf', r: 255, g: 179, b: 0),
+    ],
+  ),
+  PaletteData(
+    name: 'Lavender Fields',
+    colors: [
+      ColorData(hex: '#E1BEE7', name: 'Lavender', r: 225, g: 190, b: 231),
+      ColorData(hex: '#9575CD', name: 'Purple', r: 149, g: 117, b: 205),
+      ColorData(hex: '#673AB7', name: 'Deep Purple', r: 103, g: 58, b: 183),
+      ColorData(hex: '#4CAF50', name: 'Stem', r: 76, g: 175, b: 80),
+    ],
+  ),
+  PaletteData(
+    name: 'Solar Flare',
+    colors: [
+      ColorData(hex: '#FFF9C4', name: 'Beam', r: 255, g: 249, b: 196),
+      ColorData(hex: '#FFF176', name: 'Sunshine', r: 255, g: 241, b: 118),
+      ColorData(hex: '#FFD54F', name: 'Corona', r: 255, g: 213, b: 79),
+      ColorData(hex: '#F4511E', name: 'Flare', r: 244, g: 81, b: 30),
+    ],
+  ),
+  PaletteData(
+    name: 'Emerald City',
+    colors: [
+      ColorData(hex: '#E8F5E9', name: 'Glass', r: 232, g: 245, b: 233),
+      ColorData(hex: '#4CAF50', name: 'Leaf', r: 76, g: 175, b: 80),
+      ColorData(hex: '#2E7D32', name: 'Forest', r: 46, g: 125, b: 50),
+      ColorData(hex: '#1B5E20', name: 'Deep Emerald', r: 27, g: 94, b: 32),
+    ],
+  ),
+  PaletteData(
+    name: 'Coffee Shop',
+    colors: [
+      ColorData(hex: '#3E2723', name: 'Espresso', r: 62, g: 39, b: 35),
+      ColorData(hex: '#5D4037', name: 'Mocha', r: 93, g: 64, b: 55),
+      ColorData(hex: '#A1887F', name: 'Latte', r: 161, g: 136, b: 127),
+      ColorData(hex: '#D7CCC8', name: 'Cream', r: 215, g: 204, b: 200),
+    ],
+  ),
+  PaletteData(
+    name: 'Candy Shop',
+    colors: [
+      ColorData(hex: '#F06292', name: 'Bubblegum', r: 240, g: 98, b: 146),
+      ColorData(hex: '#BA68C8', name: 'Grape', r: 186, g: 104, b: 200),
+      ColorData(hex: '#4FC3F7', name: 'Blueberry', r: 79, g: 195, b: 247),
+      ColorData(hex: '#AED581', name: 'Lime', r: 174, g: 213, b: 129),
+    ],
+  ),
+  PaletteData(
+    name: 'Slate & Stone',
+    colors: [
+      ColorData(hex: '#263238', name: 'Obsidian', r: 38, g: 50, b: 56),
+      ColorData(hex: '#455A64', name: 'Slate', r: 69, g: 90, b: 100),
+      ColorData(hex: '#78909C', name: 'Stone', r: 120, g: 144, b: 156),
+      ColorData(hex: '#B0BEC5', name: 'Mist', r: 176, g: 190, b: 197),
+    ],
+  ),
+  PaletteData(
+    name: 'Tropical Paradise',
+    colors: [
+      ColorData(hex: '#00BCD4', name: 'Cyan Sea', r: 0, g: 188, b: 212),
+      ColorData(hex: '#CDDC39', name: 'Lime Leaf', r: 205, g: 220, b: 57),
+      ColorData(hex: '#FFC107', name: 'Sunlight', r: 255, g: 193, b: 7),
+      ColorData(hex: '#FF5722', name: 'Hibiscus', r: 255, g: 87, b: 34),
+    ],
+  ),
+  PaletteData(
+    name: 'Moonlight Shadow',
+    colors: [
+      ColorData(hex: '#1A237E', name: 'Midnight', r: 26, g: 35, b: 126),
+      ColorData(hex: '#3F51B5', name: 'Indigo', r: 63, g: 81, b: 181),
+      ColorData(hex: '#7986CB', name: 'Moonlight', r: 121, g: 134, b: 203),
+      ColorData(hex: '#C5CAE9', name: 'Silver', r: 197, g: 202, b: 233),
+    ],
+  ),
 ];
 
 void showToast(BuildContext context, String message, {String? copyText}) {
@@ -1580,103 +1716,6 @@ class _SortOption extends StatelessWidget {
   }
 }
 
-class _ShareSheet extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.offBlack,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border(top: BorderSide(color: AppColors.border)),
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Center(
-            child: Container(
-              width: 32,
-              height: 3,
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Share',
-            style: GoogleFonts.inter(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: AppColors.white,
-            ),
-          ),
-          const SizedBox(height: 20),
-          GridView.count(
-            shrinkWrap: true,
-            crossAxisCount: 4,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            children: const [
-              _ShareItem('🔗', 'Copy Link'),
-              _ShareItem('🖼️', 'Save Image'),
-              _ShareItem('💬', 'Messages'),
-              _ShareItem('📸', 'Instagram'),
-              _ShareItem('🐦', 'X (Twitter)'),
-              _ShareItem('📌', 'Pinterest'),
-              _ShareItem('🎨', 'Figma'),
-              _ShareItem('⋯', 'More'),
-            ],
-          ),
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
-}
-
-class _ShareItem extends StatelessWidget {
-  final String emoji, label;
-  const _ShareItem(this.emoji, this.label);
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        showToast(context, '$label tapped');
-        Navigator.pop(context);
-      },
-      child: Column(
-        children: [
-          Container(
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(
-              color: AppColors.dark,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Center(
-              child: Text(emoji, style: const TextStyle(fontSize: 24)),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: AppColors.muted,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _MainButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
@@ -2118,7 +2157,9 @@ class _ColorOfDay extends StatelessWidget {
                       },
                     ),
                     const SizedBox(width: 6),
-                    _IconBtn(Icons.share, () => _showShareSheet(context)),
+                    _IconBtn(Icons.share, () {
+                      Share.share('Check out this color: ${color.name} (${color.hex})');
+                    }),
                   ],
                 ),
               ],
@@ -2126,14 +2167,6 @@ class _ColorOfDay extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  void _showShareSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _ShareSheet(),
     );
   }
 }
@@ -3346,36 +3379,6 @@ class _PalettesScreenState extends State<PalettesScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        GestureDetector(
-          onTap: () => _showNewPaletteDialog(context, state),
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            padding: const EdgeInsets.all(13),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: AppColors.border,
-                style: BorderStyle.solid,
-              ),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.add, color: AppColors.white, size: 16),
-                const SizedBox(width: 8),
-                Text(
-                  'New Palette',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
         Expanded(
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
@@ -3400,7 +3403,10 @@ class _PalettesScreenState extends State<PalettesScreen> {
                 return _PaletteCard(
                   palette: palette,
                   onCopy: () => showToast(context, '${palette.name} copied!'),
-                  onShare: () => _showShareSheet(context),
+                  onShare: () {
+                    final content = 'Palette: ${palette.name}\n${palette.colors.map((c) => c.hex).join(', ')}';
+                    Share.share(content);
+                  },
                   onDelete: () {
                     state.deletePalette(palette);
                     showToast(context, '${palette.name} deleted');
@@ -3411,14 +3417,6 @@ class _PalettesScreenState extends State<PalettesScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  void _showShareSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _ShareSheet(),
     );
   }
 
@@ -4068,7 +4066,9 @@ class ColorDetailScreen extends StatelessWidget {
                     ),
                     _CircleBtn(
                       Icons.share,
-                      onTap: () => showToast(context, 'Shared color'),
+                      onTap: () => Share.share(
+                        'Color: ${state.displayName(color)} (${color.hex})',
+                      ),
                     ),
                     _CircleBtn(
                       Icons.delete,
@@ -4134,7 +4134,12 @@ class ColorDetailScreen extends StatelessWidget {
                   Expanded(
                     child: _MainButton(
                       'Share Palette',
-                      () => showToast(context, 'Palette shared'),
+                      () {
+                        final palette = generatePalette(color);
+                        final content = 'Generated Palette for ${state.displayName(color)} (${color.hex}):\n'
+                            '${palette.map((c) => c.hex).join(', ')}';
+                        Share.share(content);
+                      },
                     ),
                   ),
                   const SizedBox(width: 8),
